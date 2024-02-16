@@ -1,5 +1,6 @@
 global using System.Security.Claims;
 global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
 global using AutoMapper;
 
 global using static InkloomApi.Constants;
@@ -19,6 +20,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddDbContext<DataContext>(options =>
+{
+  options.UseNpgsql(builder.Configuration["PgConnectionString"]);
+});
+
 builder.Services.AddAuthentication(AUTH_SCHEME)
     .AddJwtBearer(options =>
     {

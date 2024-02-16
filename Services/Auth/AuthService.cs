@@ -9,23 +9,23 @@ namespace InkloomApi.Services
     {
 
         private readonly IConfiguration _config;
-        private readonly IMapper _mapper;
+        private readonly DataContext _context;
 
         public enum TokenType { Access, Refresh };
 
-        public AuthService(IConfiguration config, IMapper mapper)
+        public AuthService(IConfiguration config, IMapper mapper, DataContext context)
         {
             _config = config;
-            _mapper = mapper;
+            _context = context;
         }
         async public Task<ServiceResponse<LoginResponse>> Login(LoginRequest credentials)
         {
-            var user = UserData.FindUser(credentials.Username);
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == credentials.Username);
             if (user == null || user.Password != credentials.Password)
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Incorrect Username or Password" };
             }
-            return new() { Data = UpdateUserTokens(user) };
+            return new() { Data = await UpdateUserTokens(user) };
         }
 
         async public Task<ServiceResponse<LoginResponse>> Refresh(RefreshRequest credentials)
@@ -33,20 +33,22 @@ namespace InkloomApi.Services
             var principalAccess = ValidatJwt(credentials.AccessToken, false);
             var principalRefresh = ValidatJwt(credentials.RefreshToken);
             var username = principalAccess?.Identity?.Name ?? string.Empty;
-            var user = UserData.FindUser(username);
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
             if (user == null || principalRefresh?.Identity?.Name != user.Username || credentials.RefreshToken != user.RefreshToken || user.RefreshTokenExpiry <= DateTime.Now)
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Invalid Tokens" };
             }
-            return new() { Data = UpdateUserTokens(user) };
+            return new() { Data = await UpdateUserTokens(user) };
         }
 
-        private LoginResponse UpdateUserTokens(User user)
+        private async Task<LoginResponse> UpdateUserTokens(User user)
         {
             var accessToken = GenerateJwt(user, TokenType.Access);
             var refreshToken = GenerateJwt(user, TokenType.Refresh);
             var refreshTokenExpiry = DateTime.Now.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "120"));
-            UserData.UpdateUser(new() { Username = user.Username, RefreshToken = refreshToken, RefreshTokenExpiry = refreshTokenExpiry });
+            user.RefreshTokenExpiry = refreshTokenExpiry;
+            user.RefreshToken = refreshToken;
+            await _context.SaveChangesAsync();
             return new() { Username = user.Username, AccessToken = accessToken, RefreshToken = refreshToken };
         }
         private string GenerateJwt(User user, TokenType type)
@@ -98,16 +100,6 @@ namespace InkloomApi.Services
             if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid Token");
             return principal;
-        }
-
-        public ServiceResponse<UserResponse> Me(string username)
-        {
-            var user = UserData.FindUser(username);
-            if (user == null || user.Username != username)
-            {
-                return new(HttpStatusCode.NotFound) { Message = "User not Found" };
-            }
-            return new() { Data = _mapper.Map<UserResponse>(user) };
         }
     }
 }

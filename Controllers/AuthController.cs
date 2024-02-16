@@ -6,25 +6,17 @@ namespace InkloomApi.Controllers
     [Route(DEFAULT_ROUTE)]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _AuthService;
-        public AuthController(IAuthService AuthService)
+        private readonly IAuthService _authService;
+        public AuthController(IAuthService authService)
         {
-            _AuthService = AuthService;
-        }
-        [HttpGet]
-        [Authorize]
-        public ActionResult<ServiceResponse<UserResponse>> Me()
-        {
-            var username = User.Identity?.Name ?? string.Empty;
-            var serviceResponse = _AuthService.Me(username);
-            return StatusCode((int)serviceResponse.Status, serviceResponse);
+            _authService = authService;
         }
 
         [HttpPost]
 
         public async Task<ActionResult<ServiceResponse<LoginResponse>>> Login(LoginRequest credentials)
         {
-            var serviceResponse = await _AuthService.Login(credentials);
+            var serviceResponse = await _authService.Login(credentials);
             return StatusCode((int)serviceResponse.Status, serviceResponse);
         }
 
@@ -32,7 +24,7 @@ namespace InkloomApi.Controllers
 
         public async Task<ActionResult<ServiceResponse<LoginResponse>>> Refresh(RefreshRequest credentials)
         {
-            var serviceResponse = await _AuthService.Refresh(credentials);
+            var serviceResponse = await _authService.Refresh(credentials);
             return StatusCode((int)serviceResponse.Status, serviceResponse);
         }
     }
