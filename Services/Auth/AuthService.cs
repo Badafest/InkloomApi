@@ -11,9 +11,7 @@ namespace InkloomApi.Services
         private readonly IConfiguration _config;
         private readonly DataContext _context;
 
-        public enum TokenType { Access, Refresh };
-
-        public AuthService(IConfiguration config, IMapper mapper, DataContext context)
+        public AuthService(IConfiguration config, DataContext context)
         {
             _config = config;
             _context = context;
@@ -34,7 +32,17 @@ namespace InkloomApi.Services
             var principalRefresh = ValidatJwt(credentials.RefreshToken);
             var username = principalAccess?.Identity?.Name ?? string.Empty;
             var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
-            if (user == null || principalRefresh?.Identity?.Name != user.Username || credentials.RefreshToken != user.RefreshToken || user.RefreshTokenExpiry <= DateTime.Now)
+            if (user == null || principalRefresh?.Identity?.Name != user.Username)
+            {
+                return new(HttpStatusCode.BadRequest) { Message = "Invalid Tokens" };
+            }
+            var refreshToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id);
+            if (refreshToken != null)
+            {
+                _context.Tokens.Remove(refreshToken);
+                await _context.SaveChangesAsync();
+            }
+            if (refreshToken == null || refreshToken.Value != credentials.RefreshToken || refreshToken.Expiry < DateTime.Now)
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Invalid Tokens" };
             }
@@ -43,29 +51,29 @@ namespace InkloomApi.Services
 
         private async Task<LoginResponse> UpdateUserTokens(User user)
         {
-            var accessToken = GenerateJwt(user, TokenType.Access);
-            var refreshToken = GenerateJwt(user, TokenType.Refresh);
-            var refreshTokenExpiry = DateTime.Now.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "120"));
-            user.RefreshTokenExpiry = refreshTokenExpiry;
-            user.RefreshToken = refreshToken;
-            await _context.SaveChangesAsync();
+            var accessTokenExpiry = DateTime.Now.AddMinutes(int.Parse(_config["Jwt:Expiry:Access"] ?? "120"));
+            var accessToken = GenerateJwt(user, accessTokenExpiry);
+
+            var refreshTokenExpiry = DateTime.Now.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "4320"));
+            var refreshToken = GenerateJwt(user, refreshTokenExpiry);
+
+            await _context.Tokens.AddAsync(new() { Value = refreshToken, Type = TokenType.RefreshToken, Expiry = refreshTokenExpiry, UserId = user.Id });
+
             return new() { Username = user.Username, AccessToken = accessToken, RefreshToken = refreshToken };
         }
-        private string GenerateJwt(User user, TokenType type)
+        private string GenerateJwt(User user, DateTime expiry)
         {
             var signingKey = _config["Jwt:Key"] ?? string.Empty;
             var issuer = _config["Jwt:Issuer"] ?? string.Empty;
             var audience = _config["Jwt:Audience"] ?? string.Empty;
-            var expiry = int.Parse(_config[$"Jwt:Expiry:{type}"] ?? "120");
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Name),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("type", type.ToString())
             };
 
             var token = new JwtSecurityToken(
@@ -73,7 +81,7 @@ namespace InkloomApi.Services
                 audience: audience,
                 claims: claims,
                 notBefore: DateTime.Now,
-                expires: DateTime.Now.AddMinutes(expiry),
+                expires: expiry,
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
