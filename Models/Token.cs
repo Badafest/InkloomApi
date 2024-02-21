@@ -12,6 +12,6 @@ namespace InkloomApi.Models
 
         public string Value { get; set; } = "";
 
-        public DateTime Expiry;
+        public DateTime Expiry { get; set; }
     }
 }

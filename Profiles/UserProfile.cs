@@ -5,7 +5,7 @@ namespace InkloomApi.Profiles
         public UserProfile()
         {
             CreateMap<User, UserResponse>();
-            CreateMap<CreateUserRequest, User>();
+            CreateMap<RegisterRequest, User>();
             CreateMap<UpdateUserRequest, User>();
         }
     }

@@ -4,6 +4,8 @@ namespace InkloomApi.Controllers
 {
     [ApiController]
     [Route(DEFAULT_ROUTE)]
+    
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _UserService;
@@ -12,7 +14,6 @@ namespace InkloomApi.Controllers
             _UserService = UserService;
         }
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<ServiceResponse<UserResponse>>> Me()
         {
             var username = User.Identity?.Name ?? string.Empty;

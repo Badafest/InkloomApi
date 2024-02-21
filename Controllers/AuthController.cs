@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-
 namespace InkloomApi.Controllers
 {
     [ApiController]
@@ -13,6 +11,13 @@ namespace InkloomApi.Controllers
         }
 
         [HttpPost]
+        public async Task<ActionResult<ServiceResponse<UserResponse>>> Register(RegisterRequest userData)
+        {
+            var serviceResponse = await _authService.Register(userData);
+            return StatusCode((int)serviceResponse.Status, serviceResponse);
+        }
+
+        [HttpPost]
 
         public async Task<ActionResult<ServiceResponse<LoginResponse>>> Login(LoginRequest credentials)
         {
@@ -21,7 +26,6 @@ namespace InkloomApi.Controllers
         }
 
         [HttpPost]
-
         public async Task<ActionResult<ServiceResponse<LoginResponse>>> Refresh(RefreshRequest credentials)
         {
             var serviceResponse = await _authService.Refresh(credentials);

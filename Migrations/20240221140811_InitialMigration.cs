@@ -19,7 +19,7 @@ namespace InkloomApi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Username = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false)
+                    PasswordHash = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,9 +48,22 @@ namespace InkloomApi.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tokens_UserId",
+                name: "IX_Tokens_UserId_Type",
                 table: "Tokens",
-                column: "UserId");
+                columns: new[] { "UserId", "Type" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username",
+                unique: true);
         }
 
         /// <inheritdoc />

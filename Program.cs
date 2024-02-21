@@ -19,7 +19,8 @@ using Microsoft.AspNetCore.Diagnostics;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
   options.UseNpgsql(builder.Configuration["PgConnectionString"]);
@@ -39,6 +40,13 @@ builder.Services.AddAuthentication(AUTH_SCHEME)
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
       };
     });
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -70,11 +78,6 @@ builder.Services.AddSwaggerGen(options =>
           }
         });
 });
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
-
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

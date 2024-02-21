@@ -9,17 +9,28 @@ namespace InkloomApi.Services
     {
 
         private readonly IConfiguration _config;
+        private readonly IMapper _mapper;
         private readonly DataContext _context;
 
-        public AuthService(IConfiguration config, DataContext context)
+
+        public AuthService(IConfiguration config, DataContext context, IMapper mapper)
         {
             _config = config;
             _context = context;
+            _mapper = mapper;
+        }
+
+        async public Task<ServiceResponse<UserResponse>> Register(RegisterRequest userData)
+        {
+            var user = new User { Username = userData.Username, Password = userData.Password, Email = userData.Email };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return new() { Data = _mapper.Map<UserResponse>(user) };
         }
         async public Task<ServiceResponse<LoginResponse>> Login(LoginRequest credentials)
         {
             var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == credentials.Username);
-            if (user == null || user.Password != credentials.Password)
+            if (user == null || !user.VerifyPassword(credentials.Password))
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Incorrect Username or Password" };
             }
@@ -37,27 +48,34 @@ namespace InkloomApi.Services
                 return new(HttpStatusCode.BadRequest) { Message = "Invalid Tokens" };
             }
             var refreshToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id);
-            if (refreshToken != null)
-            {
-                _context.Tokens.Remove(refreshToken);
-                await _context.SaveChangesAsync();
-            }
-            if (refreshToken == null || refreshToken.Value != credentials.RefreshToken || refreshToken.Expiry < DateTime.Now)
+            if (refreshToken == null || refreshToken.Value != credentials.RefreshToken || refreshToken.Expiry < DateTime.UtcNow)
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Invalid Tokens" };
             }
-            return new() { Data = await UpdateUserTokens(user) };
+            return new() { Data = await UpdateUserTokens(user, refreshToken) };
         }
 
-        private async Task<LoginResponse> UpdateUserTokens(User user)
+        private async Task<LoginResponse> UpdateUserTokens(User user, Token? dbRefreshToken = null)
         {
-            var accessTokenExpiry = DateTime.Now.AddMinutes(int.Parse(_config["Jwt:Expiry:Access"] ?? "120"));
+            var accessTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Access"] ?? "120"));
             var accessToken = GenerateJwt(user, accessTokenExpiry);
 
-            var refreshTokenExpiry = DateTime.Now.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "4320"));
+            var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "4320"));
             var refreshToken = GenerateJwt(user, refreshTokenExpiry);
 
-            await _context.Tokens.AddAsync(new() { Value = refreshToken, Type = TokenType.RefreshToken, Expiry = refreshTokenExpiry, UserId = user.Id });
+            var oldRefreshToken = dbRefreshToken ?? await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id);
+            if (oldRefreshToken != null)
+            {
+                oldRefreshToken.Value = refreshToken;
+                oldRefreshToken.Expiry = refreshTokenExpiry;
+                oldRefreshToken.Type = TokenType.RefreshToken;
+                oldRefreshToken.UserId = user.Id;
+            }
+            else
+            {
+                _context.Tokens.Add(new() { Value = refreshToken, Expiry = refreshTokenExpiry, Type = TokenType.RefreshToken, UserId = user.Id });
+            }
+            await _context.SaveChangesAsync();
 
             return new() { Username = user.Username, AccessToken = accessToken, RefreshToken = refreshToken };
         }
@@ -80,7 +98,7 @@ namespace InkloomApi.Services
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                notBefore: DateTime.Now,
+                notBefore: DateTime.UtcNow,
                 expires: expiry,
                 signingCredentials: credentials);
 

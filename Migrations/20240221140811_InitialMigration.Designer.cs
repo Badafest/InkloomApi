@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InkloomApi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240217125824_InitialMigration")]
+    [Migration("20240221140811_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -44,7 +44,8 @@ namespace InkloomApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Type")
+                        .IsUnique();
 
                     b.ToTable("Tokens");
                 });
@@ -61,7 +62,7 @@ namespace InkloomApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -70,6 +71,12 @@ namespace InkloomApi.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
