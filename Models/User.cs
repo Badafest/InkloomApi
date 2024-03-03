@@ -52,7 +52,6 @@ namespace InkloomApi.Models
             }
             set
             {
-                Console.WriteLine($"PASS SET: {value}");
                 if (!PasswordRegex().IsMatch(value))
                 {
                     throw new ArgumentException("Password must contain at least 8 characters and at least 1 uppercase letter, 1 lowercase letter, and 1 number");

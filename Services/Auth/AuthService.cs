@@ -22,11 +22,21 @@ namespace InkloomApi.Services
 
         async public Task<ServiceResponse<UserResponse>> Register(RegisterRequest userData)
         {
+            var oldUser = await _context.Users.FirstOrDefaultAsync(user => user.Username == userData.Username || user.Email == userData.Email);
+            if (oldUser?.Username == userData.Username)
+            {
+                return new(HttpStatusCode.BadRequest) { Message = "Username is already Taken" };
+            }
+            if (oldUser?.Email == userData.Email)
+            {
+                return new(HttpStatusCode.BadRequest) { Message = "Email is already Taken" };
+            }
             var user = new User { Username = userData.Username, Password = userData.Password, Email = userData.Email };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return new() { Data = _mapper.Map<UserResponse>(user) };
         }
+        
         async public Task<ServiceResponse<LoginResponse>> Login(LoginRequest credentials)
         {
             var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == credentials.Username);
@@ -79,6 +89,7 @@ namespace InkloomApi.Services
 
             return new() { Username = user.Username, AccessToken = accessToken, RefreshToken = refreshToken };
         }
+
         private string GenerateJwt(User user, DateTime expiry)
         {
             var signingKey = _config["Jwt:Key"] ?? string.Empty;

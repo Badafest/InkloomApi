@@ -13,8 +13,8 @@ global using InkloomApi.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using System.Net;
-using Microsoft.AspNetCore.Diagnostics;
+
+using InkloomApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,25 +82,18 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
+{
+  app.UseHsts();
+  app.UseHttpsRedirection();
+}
+else
 {
   app.UseSwagger();
   app.UseSwaggerUI();
 }
 
-app.UseExceptionHandler(appError =>
-{
-  appError.Run(async (context) =>
-  {
-    var feature = context.Features.Get<IExceptionHandlerFeature>();
-    var message = app.Environment.IsDevelopment() ? feature?.Error.Message ?? DEFAULT_ERROR_MESSAGE : DEFAULT_ERROR_MESSAGE;
-    var trace = app.Environment.IsDevelopment() ? feature?.Error?.StackTrace ?? string.Empty : string.Empty;
-    var response = new ServiceResponse<string>(HttpStatusCode.InternalServerError) { Message = message, Data = trace };
-    await context.Response.WriteAsJsonAsync(response);
-  });
-});
-
-app.UseHttpsRedirection();
+app.UseExceptionMiddleware();
 
 app.UseAuthentication();
 
