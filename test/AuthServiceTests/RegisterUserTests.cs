@@ -1,17 +1,10 @@
 using System.Net;
 using InkloomApi.Dtos;
-using InkloomApi.Services;
 
 namespace test;
 
-[TestCaseOrderer(ordererTypeName: "test.PriorityOrderer", ordererAssemblyName: "test")]
-public class RegisterUserTests
+public partial class AuthServiceTests
 {
-    // A valid username can contain lowercase letters and numbers only
-    private readonly string VALID_USERNAME = "test123";
-    // A valid password is at least 8 characters long and contains at least 1 uppercase, 1 lowercase and 1 number each
-    private readonly string VALID_PASSWORD = "Str0ngPassword";
-    private readonly string VALID_EMAIL = "test@mail.com";
 
     [Theory, TestPriority(1)]
     [InlineData("")]
@@ -20,8 +13,7 @@ public class RegisterUserTests
 
     public async void RegisterBadUsernameThrowsArgumentException(string username)
     {
-        var authService = new AuthService(Configuration.config, Configuration.dataContext, Configuration.autoMapper);
-        var userData = new RegisterRequest() { Username = username, Email = VALID_EMAIL, Password = VALID_PASSWORD };
+        var userData = new RegisterRequest() { Username = username, Email = validUser.Email, Password = validUser.Password };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
 
@@ -33,8 +25,7 @@ public class RegisterUserTests
 
     public async void RegisterBadEmailThrowsArgumentException(string email)
     {
-        var authService = new AuthService(Configuration.config, Configuration.dataContext, Configuration.autoMapper);
-        var userData = new RegisterRequest() { Username = VALID_USERNAME, Email = email, Password = VALID_PASSWORD };
+        var userData = new RegisterRequest() { Username = validUser.Username, Email = email, Password = validUser.Password };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
 
@@ -45,8 +36,7 @@ public class RegisterUserTests
 
     public async void RegisterBadPasswordThrowsArgumentException(string password)
     {
-        var authService = new AuthService(Configuration.config, Configuration.dataContext, Configuration.autoMapper);
-        var userData = new RegisterRequest() { Username = VALID_USERNAME, Email = VALID_EMAIL, Password = password };
+        var userData = new RegisterRequest() { Username = validUser.Username, Email = validUser.Email, Password = password };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
 
@@ -54,21 +44,19 @@ public class RegisterUserTests
     [Fact, TestPriority(4)]
     public async void RegisterValidUserReturnsUserResponse()
     {
-        var authService = new AuthService(Configuration.config, Configuration.dataContext, Configuration.autoMapper);
-        var userData = new RegisterRequest() { Username = VALID_USERNAME, Email = VALID_EMAIL, Password = VALID_PASSWORD };
+        var userData = new RegisterRequest() { Username = validUser.Username, Email = validUser.Email, Password = validUser.Password };
         var serviceResponse = await authService.Register(userData);
 
         Assert.True(serviceResponse?.Success);
         Assert.Equal(serviceResponse?.Status, HttpStatusCode.OK);
-        Assert.Equal(serviceResponse?.Data?.Email, VALID_EMAIL);
-        Assert.Equal(serviceResponse?.Data?.Username, VALID_USERNAME);
+        Assert.Equal(serviceResponse?.Data?.Email, validUser.Email);
+        Assert.Equal(serviceResponse?.Data?.Username, validUser.Username);
     }
 
     [Fact, TestPriority(5)]
     public async void RegisterExistingUsernameReturnsBadRequest()
     {
-        var authService = new AuthService(Configuration.config, Configuration.dataContext, Configuration.autoMapper);
-        var userData = new RegisterRequest() { Username = VALID_USERNAME, Email = "test2@mail.com", Password = VALID_PASSWORD };
+        var userData = new RegisterRequest() { Username = validUser.Username, Email = "test2@mail.com", Password = validUser.Password };
         var serviceResponse = await authService.Register(userData);
 
         Assert.False(serviceResponse?.Success);
@@ -79,8 +67,7 @@ public class RegisterUserTests
     [Fact, TestPriority(6)]
     public async void RegisterExistingEmailReturnsBadRequest()
     {
-        var authService = new AuthService(Configuration.config, Configuration.dataContext, Configuration.autoMapper);
-        var userData = new RegisterRequest() { Username = "test456", Email = VALID_EMAIL, Password = VALID_PASSWORD };
+        var userData = new RegisterRequest() { Username = "test456", Email = validUser.Email, Password = validUser.Password };
         var serviceResponse = await authService.Register(userData);
 
         Assert.False(serviceResponse?.Success);

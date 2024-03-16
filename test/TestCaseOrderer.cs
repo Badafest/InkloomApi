@@ -4,11 +4,9 @@ using Xunit.Sdk;
 namespace test;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class TestPriorityAttribute : Attribute
+public class TestPriorityAttribute(int priority) : Attribute
 {
-    public int Priority { get; private set; }
-
-    public TestPriorityAttribute(int priority) => Priority = priority;
+    public int Priority { get; private set; } = priority;
 }
 public class PriorityOrderer : ITestCaseOrderer
 {
@@ -39,8 +37,10 @@ public class PriorityOrderer : ITestCaseOrderer
     private static TValue GetOrCreate<TKey, TValue>(
         IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : struct
-        where TValue : new() =>
-        dictionary.TryGetValue(key, out TValue? result)
+        where TValue : new()
+    {
+        return dictionary.TryGetValue(key, out TValue? result)
             ? result
             : (dictionary[key] = new TValue());
+    }
 }

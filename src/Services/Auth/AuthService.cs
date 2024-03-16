@@ -44,7 +44,7 @@ namespace InkloomApi.Services
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Incorrect Username or Password" };
             }
-            return new() { Data = await UpdateUserTokens(user) };
+            return new() { Data = await GenerateAuthTokens(user) };
         }
 
         async public Task<ServiceResponse<LoginResponse>> Refresh(RefreshRequest credentials)
@@ -62,10 +62,10 @@ namespace InkloomApi.Services
             {
                 return new(HttpStatusCode.BadRequest) { Message = "Invalid Tokens" };
             }
-            return new() { Data = await UpdateUserTokens(user, refreshToken) };
+            return new() { Data = await GenerateAuthTokens(user, refreshToken) };
         }
 
-        private async Task<LoginResponse> UpdateUserTokens(User user, Token? dbRefreshToken = null)
+        private async Task<LoginResponse> GenerateAuthTokens(User user, Token? oldRefreshToken = null)
         {
             var accessTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Access"] ?? "120"));
             var accessToken = GenerateJwt(user, accessTokenExpiry);
@@ -73,7 +73,6 @@ namespace InkloomApi.Services
             var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "4320"));
             var refreshToken = GenerateJwt(user, refreshTokenExpiry);
 
-            var oldRefreshToken = dbRefreshToken ?? await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id);
             if (oldRefreshToken != null)
             {
                 oldRefreshToken.Value = refreshToken;

@@ -11,7 +11,7 @@ namespace InkloomApi.Data
             builder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             builder.Entity<User>().HasIndex(u => u.Username).IsUnique();
 
-            builder.Entity<Token>().HasIndex(t => new { t.UserId, t.Type }).IsUnique();
+            builder.Entity<Token>().HasIndex(t => new { t.UserId, t.Type });
         }
 
     }
