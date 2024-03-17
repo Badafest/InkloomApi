@@ -6,57 +6,82 @@ namespace test;
 public partial class AuthServiceTests
 {
 
-    [Theory, TestPriority(1)]
+    [Theory, TestCasePriority(1)]
     [InlineData("")]
     [InlineData("@user")]
     [InlineData("user_name")]
 
     public async void RegisterBadUsernameThrowsArgumentException(string username)
     {
-        var userData = new RegisterRequest() { Username = username, Email = validUser.Email, Password = validUser.Password };
+        var userData = new RegisterRequest()
+        {
+            Username = username,
+            Email = Configuration.validUser.Email,
+            Password = Configuration.validUser.Password
+        };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
 
 
-    [Theory, TestPriority(2)]
+    [Theory, TestCasePriority(2)]
     [InlineData("")]
     [InlineData("@user.com")]
     [InlineData("testuser.com")]
 
     public async void RegisterBadEmailThrowsArgumentException(string email)
     {
-        var userData = new RegisterRequest() { Username = validUser.Username, Email = email, Password = validUser.Password };
+        var userData = new RegisterRequest()
+        {
+            Username = Configuration.validUser.Username,
+            Email = email,
+            Password = Configuration.validUser.Password
+        };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
 
-    [Theory, TestPriority(3)]
+    [Theory, TestCasePriority(3)]
     [InlineData("1!@#1#$!#$!")]
     [InlineData("password")]
     [InlineData("P!2A")]
 
     public async void RegisterBadPasswordThrowsArgumentException(string password)
     {
-        var userData = new RegisterRequest() { Username = validUser.Username, Email = validUser.Email, Password = password };
+        var userData = new RegisterRequest()
+        {
+            Username = Configuration.validUser.Username,
+            Email = Configuration.validUser.Email,
+            Password = password
+        };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
 
 
-    [Fact, TestPriority(4)]
+    [Fact, TestCasePriority(4)]
     public async void RegisterValidUserReturnsUserResponse()
     {
-        var userData = new RegisterRequest() { Username = validUser.Username, Email = validUser.Email, Password = validUser.Password };
+        var userData = new RegisterRequest()
+        {
+            Username = Configuration.validUser.Username,
+            Email = Configuration.validUser.Email,
+            Password = Configuration.validUser.Password
+        };
         var serviceResponse = await authService.Register(userData);
 
         Assert.True(serviceResponse?.Success);
         Assert.Equal(serviceResponse?.Status, HttpStatusCode.OK);
-        Assert.Equal(serviceResponse?.Data?.Email, validUser.Email);
-        Assert.Equal(serviceResponse?.Data?.Username, validUser.Username);
+        Assert.Equal(serviceResponse?.Data?.Email, Configuration.validUser.Email);
+        Assert.Equal(serviceResponse?.Data?.Username, Configuration.validUser.Username);
     }
 
-    [Fact, TestPriority(5)]
+    [Fact, TestCasePriority(5)]
     public async void RegisterExistingUsernameReturnsBadRequest()
     {
-        var userData = new RegisterRequest() { Username = validUser.Username, Email = "test2@mail.com", Password = validUser.Password };
+        var userData = new RegisterRequest()
+        {
+            Username = Configuration.validUser.Username,
+            Email = "test2@mail.com",
+            Password = Configuration.validUser.Password
+        };
         var serviceResponse = await authService.Register(userData);
 
         Assert.False(serviceResponse?.Success);
@@ -64,10 +89,15 @@ public partial class AuthServiceTests
     }
 
 
-    [Fact, TestPriority(6)]
+    [Fact, TestCasePriority(6)]
     public async void RegisterExistingEmailReturnsBadRequest()
     {
-        var userData = new RegisterRequest() { Username = "test456", Email = validUser.Email, Password = validUser.Password };
+        var userData = new RegisterRequest()
+        {
+            Username = "test456",
+            Email = Configuration.validUser.Email,
+            Password = Configuration.validUser.Password
+        };
         var serviceResponse = await authService.Register(userData);
 
         Assert.False(serviceResponse?.Success);

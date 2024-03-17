@@ -1,15 +1,12 @@
 using System.Net;
+using Microsoft.IdentityModel.Tokens;
 
 namespace InkloomApi.Middlewares
 {
 
-    public class ExceptionMiddleware
+    public class ExceptionMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
-        public ExceptionMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public async Task InvokeAsync(HttpContext context)
         {
@@ -18,6 +15,10 @@ namespace InkloomApi.Middlewares
                 await _next(context);
             }
             catch (ArgumentException exception)
+            {
+                await Handler(context, exception, HttpStatusCode.BadRequest);
+            }
+            catch (SecurityTokenException exception)
             {
                 await Handler(context, exception, HttpStatusCode.BadRequest);
             }

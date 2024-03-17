@@ -4,43 +4,43 @@ using Xunit.Sdk;
 namespace test;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class TestPriorityAttribute(int priority) : Attribute
+public class TestCasePriority(int value) : Attribute
 {
-    public int Priority { get; private set; } = priority;
+    public int Value { get; private set; } = value;
 }
-public class PriorityOrderer : ITestCaseOrderer
+public class TestCaseOrderer : ITestCaseOrderer
 {
     public IEnumerable<TTestCase> OrderTestCases<TTestCase>(
         IEnumerable<TTestCase> testCases) where TTestCase : ITestCase
     {
-        string assemblyName = typeof(TestPriorityAttribute).AssemblyQualifiedName!;
+        string assemblyName = typeof(TestCasePriority).AssemblyQualifiedName!;
+
         var sortedMethods = new SortedDictionary<int, List<TTestCase>>();
+
         foreach (TTestCase testCase in testCases)
         {
             int priority = testCase.TestMethod.Method
                 .GetCustomAttributes(assemblyName)
                 .FirstOrDefault()
-                ?.GetNamedArgument<int>(nameof(TestPriorityAttribute.Priority)) ?? 0;
+                ?.GetNamedArgument<int>(nameof(TestCasePriority.Value)) ?? 0;
 
-            GetOrCreate(sortedMethods, priority).Add(testCase);
+            sortedMethods.TryGetValue(priority, out var cases);
+
+            if (cases != null)
+            {
+                sortedMethods[priority].Add(testCase);
+            }
+            else
+            {
+                sortedMethods[priority] = [testCase];
+            };
         }
 
         foreach (TTestCase testCase in
             sortedMethods.Keys.SelectMany(
-                priority => sortedMethods[priority].OrderBy(
-                    testCase => testCase.TestMethod.Method.Name)))
+                priority => sortedMethods[priority]))
         {
             yield return testCase;
         }
-    }
-
-    private static TValue GetOrCreate<TKey, TValue>(
-        IDictionary<TKey, TValue> dictionary, TKey key)
-        where TKey : struct
-        where TValue : new()
-    {
-        return dictionary.TryGetValue(key, out TValue? result)
-            ? result
-            : (dictionary[key] = new TValue());
     }
 }

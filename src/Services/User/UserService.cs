@@ -2,18 +2,13 @@ using System.Net;
 
 namespace InkloomApi.Services
 {
-    public class UserService : IUserService
+    public class UserService(IMapper mapper, DataContext context) : IUserService
     {
 
-        private readonly IMapper _mapper;
+        private readonly IMapper _mapper = mapper;
 
-        private readonly DataContext _context;
+        private readonly DataContext _context = context;
 
-        public UserService(IMapper mapper, DataContext context)
-        {
-            _mapper = mapper;
-            _context = context;
-        }
         public async Task<ServiceResponse<UserResponse>> GetUser(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
