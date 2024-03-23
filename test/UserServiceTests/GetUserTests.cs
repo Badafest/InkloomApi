@@ -22,9 +22,9 @@ public partial class UserServiceTests
     [Fact, TestCasePriority(14)]
     public async void GetValidUserReturnsUserResponse()
     {
-        var serviceResponse = await userService.GetUser(Configuration.validUser.Username);
+        var serviceResponse = await userService.GetUser(testUser.Username);
 
         Assert.True(serviceResponse?.Success);
-        Assert.Equal(serviceResponse?.Data?.Username, Configuration.validUser.Username);
+        Assert.Equal(serviceResponse?.Data?.Username, testUser.Username);
     }
 }

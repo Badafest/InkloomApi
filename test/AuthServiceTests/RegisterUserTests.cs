@@ -16,8 +16,8 @@ public partial class AuthServiceTests
         var userData = new RegisterRequest()
         {
             Username = username,
-            Email = Configuration.validUser.Email,
-            Password = Configuration.validUser.Password
+            Email = testUser.Email,
+            Password = testUser.Password
         };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
@@ -32,9 +32,9 @@ public partial class AuthServiceTests
     {
         var userData = new RegisterRequest()
         {
-            Username = Configuration.validUser.Username,
+            Username = testUser.Username,
             Email = email,
-            Password = Configuration.validUser.Password
+            Password = testUser.Password
         };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
     }
@@ -48,8 +48,8 @@ public partial class AuthServiceTests
     {
         var userData = new RegisterRequest()
         {
-            Username = Configuration.validUser.Username,
-            Email = Configuration.validUser.Email,
+            Username = testUser.Username,
+            Email = testUser.Email,
             Password = password
         };
         await Assert.ThrowsAsync<ArgumentException>(() => authService.Register(userData));
@@ -61,16 +61,16 @@ public partial class AuthServiceTests
     {
         var userData = new RegisterRequest()
         {
-            Username = Configuration.validUser.Username,
-            Email = Configuration.validUser.Email,
-            Password = Configuration.validUser.Password
+            Username = testUser.Username,
+            Email = testUser.Email,
+            Password = testUser.Password
         };
         var serviceResponse = await authService.Register(userData);
 
         Assert.True(serviceResponse?.Success);
         Assert.Equal(serviceResponse?.Status, HttpStatusCode.OK);
-        Assert.Equal(serviceResponse?.Data?.Email, Configuration.validUser.Email);
-        Assert.Equal(serviceResponse?.Data?.Username, Configuration.validUser.Username);
+        Assert.Equal(serviceResponse?.Data?.Email, testUser.Email);
+        Assert.Equal(serviceResponse?.Data?.Username, testUser.Username);
     }
 
     [Fact, TestCasePriority(5)]
@@ -78,9 +78,9 @@ public partial class AuthServiceTests
     {
         var userData = new RegisterRequest()
         {
-            Username = Configuration.validUser.Username,
+            Username = testUser.Username,
             Email = "test2@mail.com",
-            Password = Configuration.validUser.Password
+            Password = testUser.Password
         };
         var serviceResponse = await authService.Register(userData);
 
@@ -95,8 +95,8 @@ public partial class AuthServiceTests
         var userData = new RegisterRequest()
         {
             Username = "test456",
-            Email = Configuration.validUser.Email,
-            Password = Configuration.validUser.Password
+            Email = testUser.Email,
+            Password = testUser.Password
         };
         var serviceResponse = await authService.Register(userData);
 

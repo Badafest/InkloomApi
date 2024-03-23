@@ -10,8 +10,8 @@ public partial class AuthServiceTests
     {
         var loginResponse = await authService.Login(new()
         {
-            Username = Configuration.validUser.Username,
-            Password = Configuration.validUser.Password
+            Username = testUser.Username,
+            Password = testUser.Password
         });
 
         var serviceResponse = await authService.Refresh(new()
@@ -49,8 +49,8 @@ public partial class AuthServiceTests
     {
         var refreshTask = authService.Refresh(new()
         {
-            AccessToken = JwtGenerator.Generate(Configuration.validUser, DateTime.UtcNow.AddHours(2)),
-            RefreshToken = JwtGenerator.Generate(Configuration.validUser, DateTime.UtcNow.AddMilliseconds(1))
+            AccessToken = JwtGenerator.Generate(testUser, DateTime.UtcNow.AddHours(2)),
+            RefreshToken = JwtGenerator.Generate(testUser, DateTime.UtcNow.AddMilliseconds(1))
         });
 
         await Assert.ThrowsAsync<SecurityTokenException>(() => refreshTask);

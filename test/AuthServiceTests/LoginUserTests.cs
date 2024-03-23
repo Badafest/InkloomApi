@@ -15,7 +15,7 @@ public partial class AuthServiceTests
         var userData = new LoginRequest()
         {
             Username = username,
-            Password = Configuration.validUser.Password
+            Password = testUser.Password
         };
         var serviceResponse = await authService.Login(userData);
 
@@ -33,7 +33,7 @@ public partial class AuthServiceTests
     {
         var userData = new LoginRequest()
         {
-            Username = Configuration.validUser.Username,
+            Username = testUser.Username,
             Password = password
         };
         var serviceResponse = await authService.Login(userData);
@@ -48,13 +48,13 @@ public partial class AuthServiceTests
     {
         var userData = new LoginRequest()
         {
-            Username = Configuration.validUser.Username,
-            Password = Configuration.validUser.Password
+            Username = testUser.Username,
+            Password = testUser.Password
         };
         var serviceResponse = await authService.Login(userData);
         Assert.Null(serviceResponse?.Message);
         Assert.True(serviceResponse?.Success);
         Assert.Equal(serviceResponse?.Status, HttpStatusCode.OK);
-        Assert.Equal(serviceResponse?.Data?.Username, Configuration.validUser.Username);
+        Assert.Equal(serviceResponse?.Data?.Username, testUser.Username);
     }
 }

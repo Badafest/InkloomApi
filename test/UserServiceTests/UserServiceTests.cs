@@ -1,14 +1,18 @@
+using InkloomApi.Models;
 using InkloomApi.Services;
 
 namespace test;
 
 [TestCaseOrderer(ordererTypeName: "test.TestCaseOrderer", ordererAssemblyName: "test")]
-[Collection("UserServiceTests")]
-[TestCollectionPriority(2)]
-public partial class UserServiceTests
+[Collection("Database Collection")]
+// [TestCollectionPriority(2)]
+public partial class UserServiceTests(Configuration configuration)
 {
-    private static readonly Configuration configuration = new();
-
-    public static readonly UserService userService = new(configuration.autoMapper, configuration.dataContext);
-
+    private readonly UserService userService = new(configuration.autoMapper, configuration.dataContext);
+    public static readonly User testUser = new()
+    {
+        Username = "user",
+        Password = "Str0ngPassword123",
+        Email = "user@inkloom.com"
+    };
 }
