@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
 namespace InkloomApi.Services;

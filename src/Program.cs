@@ -31,6 +31,8 @@ builder.Services.AddAuthentication(AUTH_SCHEME)
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSingleton<ITokenService, TokenService>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 

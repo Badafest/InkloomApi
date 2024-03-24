@@ -1,5 +1,6 @@
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
@@ -8,10 +9,12 @@ namespace InkloomApi.Services;
 public class TokenService(IConfiguration config) : ITokenService
 {
     private readonly IConfiguration _config = config;
-
-    public int GenerateOTP(short length = 6)
+    private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+    public string GenerateOTP(short length = 6)
     {
-        return 14345;
+        var randomBytes = new byte[length];
+       _rng.GetNonZeroBytes(randomBytes);
+        return randomBytes.ToString()??"";
     }
 
     public string GenerateJWT(string sub, string uniqueName, DateTime expiry)
