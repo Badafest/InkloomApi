@@ -3,94 +3,98 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 
-namespace InkloomApi.Models
+namespace InkloomApi.Models;
+public enum AuthType { PASSWORD, GOOGLE, FACEBOOK };
+public partial class User
 {
-    public partial class User
+    public int Id { get; set; } = 0;
+    public bool EmailVerified { get; set; } = false;
+
+    public string? Avatar { get; set; }
+
+    public string? About { get; set; }
+
+    public AuthType[] AuthTypes { get; set; } = [AuthType.PASSWORD];
+    private string ValidEmail = "";
+    public string Email
     {
-        public int Id { get; set; } = 0;
-        private string ValidEmail = "";
-        public string Email
+        get
         {
-            get
-            {
-                return ValidEmail;
-            }
-            set
-            {
-                if (!IsValidEmail(value))
-                {
-                    throw new ArgumentException("Invalid Email Address");
-                }
-                ValidEmail = value;
-
-            }
+            return ValidEmail;
         }
-        private string ValidUsername = "";
-        public string Username
+        set
         {
-            get
+            if (!IsValidEmail(value))
             {
-                return ValidUsername;
+                throw new ArgumentException("Invalid Email Address");
             }
-            set
-            {
-                if (!UsernameRegex().IsMatch(value))
-                {
-                    throw new ArgumentException("Username should contain lowercase letters and numbers only");
-                }
-                ValidUsername = value;
-            }
+            ValidEmail = value;
+
         }
-
-        public string PasswordHash { get; set; } = "";
-        [NotMapped]
-        public string Password
+    }
+    private string ValidUsername = "";
+    public string Username
+    {
+        get
         {
-            get
-            {
-                return PasswordHash;
-            }
-            set
-            {
-                if (!PasswordRegex().IsMatch(value))
-                {
-                    throw new ArgumentException("Password must contain at least 8 characters and at least 1 uppercase letter, 1 lowercase letter, and 1 number");
-                }
-
-                PasswordHash = hasher.HashPassword(this, value);
-            }
+            return ValidUsername;
         }
-
-        private static bool IsValidEmail(string email)
+        set
         {
-            try
+            if (!UsernameRegex().IsMatch(value))
             {
-                var addr = new MailAddress(email);
-                return addr.Address == email;
+                throw new ArgumentException("Username should contain lowercase letters and numbers only");
             }
-            catch
-            {
-                return false;
-            }
+            ValidUsername = value;
         }
+    }
 
-        [GeneratedRegex("^[a-z0-9]+$")]
-        private static partial Regex UsernameRegex();
-
-        [GeneratedRegex("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}")]
-        private static partial Regex PasswordRegex();
-
-        private static readonly PasswordHasher<User> hasher = new();
-
-        public bool VerifyPassword(string password)
+    public string PasswordHash { get; set; } = "";
+    [NotMapped]
+    public string Password
+    {
+        get
         {
-            var result = hasher.VerifyHashedPassword(this, Password, password);
-            if (result == PasswordVerificationResult.Success)
+            return PasswordHash;
+        }
+        set
+        {
+            if (!PasswordRegex().IsMatch(value))
             {
-                return true;
+                throw new ArgumentException("Password must contain at least 8 characters and at least 1 uppercase letter, 1 lowercase letter, and 1 number");
             }
+
+            PasswordHash = hasher.HashPassword(this, value);
+        }
+    }
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
             return false;
         }
     }
 
+    [GeneratedRegex("^[a-z0-9]+$")]
+    private static partial Regex UsernameRegex();
+
+    [GeneratedRegex("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}")]
+    private static partial Regex PasswordRegex();
+
+    private static readonly PasswordHasher<User> hasher = new();
+
+    public bool VerifyPassword(string password)
+    {
+        var result = hasher.VerifyHashedPassword(this, Password, password);
+        if (result == PasswordVerificationResult.Success)
+        {
+            return true;
+        }
+        return false;
+    }
 }

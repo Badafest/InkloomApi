@@ -1,12 +1,10 @@
-namespace InkloomApi.Profiles
+namespace InkloomApi.Profiles;
+public class UserProfile : Profile
 {
-    public class UserProfile : Profile
+    public UserProfile()
     {
-        public UserProfile()
-        {
-            CreateMap<User, UserResponse>();
-            CreateMap<RegisterRequest, User>();
-            CreateMap<UpdateUserRequest, User>();
-        }
+        CreateMap<User, UserResponse>();
+        CreateMap<RegisterRequest, User>();
+        CreateMap<UpdateUserRequest, User>();
     }
 }

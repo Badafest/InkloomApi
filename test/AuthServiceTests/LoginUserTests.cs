@@ -7,14 +7,14 @@ public partial class AuthServiceTests
 {
     [Theory, TestCasePriority(7)]
     [InlineData("")]
-    [InlineData("@user")]
+    [InlineData("user@mail.com")]
     [InlineData("test154")]
 
-    public async void LoginInvalidUsernameReturnsBadRequest(string username)
+    public async void LoginInvalidEmailReturnsBadRequest(string email)
     {
         var userData = new LoginRequest()
         {
-            Username = username,
+            Email = email,
             Password = testUser.Password
         };
         var serviceResponse = await authService.Login(userData);
@@ -33,7 +33,7 @@ public partial class AuthServiceTests
     {
         var userData = new LoginRequest()
         {
-            Username = testUser.Username,
+            Email = testUser.Email,
             Password = password
         };
         var serviceResponse = await authService.Login(userData);
@@ -48,7 +48,7 @@ public partial class AuthServiceTests
     {
         var userData = new LoginRequest()
         {
-            Username = testUser.Username,
+            Email = testUser.Email,
             Password = testUser.Password
         };
         var serviceResponse = await authService.Login(userData);

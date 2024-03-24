@@ -1,48 +1,45 @@
 using System.Net;
 using Microsoft.IdentityModel.Tokens;
 
-namespace InkloomApi.Middlewares
+namespace InkloomApi.Middlewares;
+public class ExceptionMiddleware(RequestDelegate next)
 {
+    private readonly RequestDelegate _next = next;
 
-    public class ExceptionMiddleware(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
     {
-        private readonly RequestDelegate _next = next;
-
-        public async Task InvokeAsync(HttpContext context)
+        try
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (ArgumentException exception)
-            {
-                await Handler(context, exception, HttpStatusCode.BadRequest);
-            }
-            catch (SecurityTokenException exception)
-            {
-                await Handler(context, exception, HttpStatusCode.BadRequest);
-            }
-            catch (Exception exception)
-            {
-                await Handler(context, exception);
-            }
+            await _next(context);
         }
-
-        private static async Task Handler(HttpContext context, Exception error, HttpStatusCode code = HttpStatusCode.InternalServerError)
+        catch (ArgumentException exception)
         {
-            var message = error.Message ?? DEFAULT_ERROR_MESSAGE;
-            var response = new ServiceResponse<string>(code) { Message = message };
-            context.Response.StatusCode = (int)response.Status;
-            await context.Response.WriteAsJsonAsync(response);
+            await Handler(context, exception, HttpStatusCode.BadRequest);
+        }
+        catch (SecurityTokenException exception)
+        {
+            await Handler(context, exception, HttpStatusCode.BadRequest);
+        }
+        catch (Exception exception)
+        {
+            await Handler(context, exception);
         }
     }
 
-    public static class ExceptionMiddlewareExtensions
+    private static async Task Handler(HttpContext context, Exception error, HttpStatusCode code = HttpStatusCode.InternalServerError)
     {
-        public static IApplicationBuilder UseExceptionMiddleware(
-            this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ExceptionMiddleware>();
-        }
+        var message = error.Message ?? DEFAULT_ERROR_MESSAGE;
+        var response = new ServiceResponse<string>(code) { Message = message };
+        context.Response.StatusCode = (int)response.Status;
+        await context.Response.WriteAsJsonAsync(response);
     }
 }
+
+public static class ExceptionMiddlewareExtensions
+{
+    public static IApplicationBuilder UseExceptionMiddleware(
+        this IApplicationBuilder builder)
+    {
+        return builder.UseMiddleware<ExceptionMiddleware>();
+    }
+};

@@ -1,13 +1,11 @@
-namespace InkloomApi.Controllers
+namespace InkloomApi.Controllers;
+[ApiController]
+[Route(DEFAULT_ROUTE)]
+public class PingController : ControllerBase
 {
-    [ApiController]
-    [Route(DEFAULT_ROUTE)]
-    public class PingController : ControllerBase
+    [HttpGet]
+    public string Test()
     {
-        [HttpGet]
-        public string Test()
-        {
-            return "PONG";
-        }
+        return "PONG";
     }
 }

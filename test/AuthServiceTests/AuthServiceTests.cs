@@ -8,7 +8,8 @@ namespace test;
 // [TestCollectionPriority(1)]
 public partial class AuthServiceTests(Configuration configuration)
 {
-    private readonly AuthService authService = new(Configuration.config, configuration.dataContext, configuration.autoMapper);
+    private static readonly TokenService tokenService = new(Configuration.config);
+    private readonly AuthService authService = new(Configuration.config, configuration.dataContext, configuration.autoMapper, tokenService);
     public static readonly User testUser = new()
     {
         // A valid username can contain lowercase letters and numbers only

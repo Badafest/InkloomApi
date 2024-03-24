@@ -1,7 +1,5 @@
-namespace InkloomApi.Services
+namespace InkloomApi.Services;
+public interface IUserService
 {
-    public interface IUserService
-    {
-        Task<ServiceResponse<UserResponse>> GetUser(string username);
-    }
+    Task<ServiceResponse<UserResponse>> GetUser(string username);
 }
