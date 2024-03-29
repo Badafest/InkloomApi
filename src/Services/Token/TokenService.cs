@@ -10,11 +10,18 @@ public class TokenService(IConfiguration config) : ITokenService
 {
     private readonly IConfiguration _config = config;
     private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+
+    private readonly string OTPValidCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     public string GenerateOTP(short length = 6)
     {
         var randomBytes = new byte[length];
-       _rng.GetNonZeroBytes(randomBytes);
-        return randomBytes.ToString()??"";
+        _rng.GetNonZeroBytes(randomBytes);
+        var code = "";
+        foreach (var randomByte in randomBytes)
+        {
+            code += OTPValidCharacters[randomByte % (OTPValidCharacters.Length - 1)];
+        }
+        return code;
     }
 
     public string GenerateJWT(string sub, string uniqueName, DateTime expiry)
