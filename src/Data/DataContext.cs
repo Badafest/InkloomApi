@@ -14,7 +14,11 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     {
         builder.Entity<User>().HasIndex(u => u.Email).IsUnique();
         builder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+        builder.Entity<User>().HasQueryFilter(u => u.DeletedById == null && u.DeletedDate <= DateTime.MinValue);
+
+        builder.Entity<Tag>().HasIndex(t => t.Name).IsUnique();
         builder.Entity<BlogTag>().HasKey(bt => new { bt.BlogId, bt.TagId });
+        builder.Entity<Blog>().HasQueryFilter(u => u.DeletedById == null && u.DeletedDate <= DateTime.MinValue);
     }
 
     public Task<int> SoftSaveChangesAsync(int? changesMadeBy = null)

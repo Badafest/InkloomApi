@@ -10,7 +10,6 @@ public class UserController(IUserService userService) : ControllerBase
     private readonly IUserService _userService = userService;
 
     [HttpGet]
-    [Route("Me")]
     public async Task<ActionResult<ServiceResponse<UserResponse>>> Me()
     {
         var username = User.Identity?.Name ?? string.Empty;
@@ -20,10 +19,26 @@ public class UserController(IUserService userService) : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    [Route("Check-Username")]
+    [Route("Username")]
     public async Task<ActionResult<ServiceResponse<bool>>> CheckUsername(string username)
     {
         var serviceResponse = await _userService.CheckUsername(username);
+        return StatusCode((int)serviceResponse.Status, serviceResponse);
+    }
+
+    [HttpPatch]
+    public async Task<ActionResult<ServiceResponse<UserResponse>>> Update(UpdateUserRequest updateData, int Id)
+    {
+        var username = User.Identity?.Name ?? string.Empty;
+        var serviceResponse = await _userService.UpdateUser(username, updateData);
+        return StatusCode((int)serviceResponse.Status, serviceResponse);
+    }
+
+    [HttpDelete]
+    public async Task<ActionResult<ServiceResponse<UserResponse>>> Delete()
+    {
+        var username = User.Identity?.Name ?? string.Empty;
+        var serviceResponse = await _userService.DeleteUser(username);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 }

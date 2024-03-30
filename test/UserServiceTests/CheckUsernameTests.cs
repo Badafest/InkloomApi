@@ -1,6 +1,3 @@
-using System.Net;
-
-
 namespace test;
 
 public partial class UserServiceTests

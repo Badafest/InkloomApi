@@ -6,6 +6,6 @@ public static class Seeder
     public static async Task Seed<T>(IEnumerable<T> data) where T : class
     {
         await dataContext.Set<T>().AddRangeAsync(data);
-        await dataContext.SaveChangesAsync();
+        await dataContext.SoftSaveChangesAsync();
     }
 }

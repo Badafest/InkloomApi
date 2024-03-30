@@ -2,7 +2,9 @@ namespace InkloomApi.Dtos;
 public class UpdateUserRequest
 
 {
-    public string Name { get; set; } = "Anonymous User";
-    public string Password { get; set; } = string.Empty;
+    public string? About { get; set; }
+    public string? Avatar { get; set; }
+    public string? Password { get; set; }
+
 }
 
