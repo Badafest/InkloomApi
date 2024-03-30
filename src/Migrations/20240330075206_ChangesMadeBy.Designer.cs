@@ -3,6 +3,7 @@ using System;
 using InkloomApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InkloomApi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240330075206_ChangesMadeBy")]
+    partial class ChangesMadeBy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,13 +54,13 @@ namespace InkloomApi.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
-                    b.Property<int>("CreatedById")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DeletedById")
+                    b.Property<int>("DeletedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("DeletedDate")
@@ -82,7 +85,7 @@ namespace InkloomApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UpdatedById")
+                    b.Property<int>("UpdatedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedDate")
@@ -91,12 +94,6 @@ namespace InkloomApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("DeletedById");
-
-                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Blogs");
                 });
@@ -124,31 +121,25 @@ namespace InkloomApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CreatedById")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DeletedById")
+                    b.Property<int>("DeletedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UpdatedById")
+                    b.Property<int>("UpdatedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("DeletedById");
-
-                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Tags");
                 });
@@ -199,13 +190,13 @@ namespace InkloomApi.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
 
-                    b.Property<int>("CreatedById")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DeletedById")
+                    b.Property<int>("DeletedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("DeletedDate")
@@ -222,7 +213,7 @@ namespace InkloomApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("UpdatedById")
+                    b.Property<int>("UpdatedBy")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedDate")
@@ -234,14 +225,8 @@ namespace InkloomApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("DeletedById");
-
                     b.HasIndex("Email")
                         .IsUnique();
-
-                    b.HasIndex("UpdatedById");
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -272,31 +257,7 @@ namespace InkloomApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InkloomApi.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InkloomApi.Models.User", "DeletedBy")
-                        .WithMany()
-                        .HasForeignKey("DeletedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InkloomApi.Models.User", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Author");
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("DeletedBy");
-
-                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("InkloomApi.Models.BlogTag", b =>
@@ -318,33 +279,6 @@ namespace InkloomApi.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("InkloomApi.Models.Tag", b =>
-                {
-                    b.HasOne("InkloomApi.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InkloomApi.Models.User", "DeletedBy")
-                        .WithMany()
-                        .HasForeignKey("DeletedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InkloomApi.Models.User", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("DeletedBy");
-
-                    b.Navigation("UpdatedBy");
-                });
-
             modelBuilder.Entity("InkloomApi.Models.Token", b =>
                 {
                     b.HasOne("InkloomApi.Models.User", "User")
@@ -354,33 +288,6 @@ namespace InkloomApi.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("InkloomApi.Models.User", b =>
-                {
-                    b.HasOne("InkloomApi.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InkloomApi.Models.User", "DeletedBy")
-                        .WithMany()
-                        .HasForeignKey("DeletedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InkloomApi.Models.User", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("DeletedBy");
-
-                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("InkloomApi.Models.Blog", b =>

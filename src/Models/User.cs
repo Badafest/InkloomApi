@@ -4,10 +4,9 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 
 namespace InkloomApi.Models;
-public enum AuthType { PASSWORD, GOOGLE, FACEBOOK };
-public partial class User
+public enum AuthType { PASSWORD, GOOGLE, FACEBOOK, MAGICLINK };
+public partial class User : ModelBase
 {
-    public int Id { get; set; } = 0;
     public bool EmailVerified { get; set; } = false;
 
     public string? Avatar { get; set; }
