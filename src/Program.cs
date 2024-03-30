@@ -29,6 +29,8 @@ builder.Services.AddAuthentication(AUTH_SCHEME)
       };
     });
 
+builder.Services.AddAuthorizationBuilder().AddPolicy("EmailVerified", policy => policy.RequireClaim("email_verified", "true"));
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSingleton<ITokenService, TokenService>();
@@ -90,6 +92,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 app.Run();

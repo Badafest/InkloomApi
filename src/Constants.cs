@@ -6,7 +6,7 @@ namespace InkloomApi
     {
 
         public const string AUTH_SCHEME = JwtBearerDefaults.AuthenticationScheme;
-        public const string DEFAULT_ROUTE = "api/v1/[controller]/[action]";
+        public const string DEFAULT_ROUTE = "api/v1/[controller]";
 
         public const string DEFAULT_ERROR_MESSAGE = "Something Went Wrong";
     }

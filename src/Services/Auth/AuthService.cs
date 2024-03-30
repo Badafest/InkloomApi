@@ -33,7 +33,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         var user = await _context.Users.FirstOrDefaultAsync(user => user.Email == credentials.Email);
         if (user == null || !user.VerifyPassword(credentials.Password))
         {
-            return new(HttpStatusCode.BadRequest) { Message = "Incorrect Username or Password" };
+            return new(HttpStatusCode.BadRequest) { Message = "Incorrect Email or Password" };
         }
         return new() { Data = await GenerateAuthTokens(user) };
     }
@@ -64,7 +64,12 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
     private async Task<LoginResponse> GenerateAuthTokens(User user, Token? oldRefreshToken = null)
     {
         var accessTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Access"] ?? "120"));
-        var accessToken = _tokenService.GenerateJWT(user.Email, user.Username, accessTokenExpiry);
+
+        var extraClaims = new Dictionary<string, string>([
+            new("email_verified", user.EmailVerified ? "true" : "false")
+        ]);
+
+        var accessToken = _tokenService.GenerateJWT(user.Email, user.Username, accessTokenExpiry, extraClaims);
 
         var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Refresh"] ?? "4320"));
         var refreshToken = _tokenService.GenerateJWT(user.Email, user.Username, refreshTokenExpiry);

@@ -6,6 +6,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     private readonly IAuthService _authService = authService;
 
     [HttpPost]
+    [Route("Register")]
     public async Task<ActionResult<ServiceResponse<UserResponse>>> Register(RegisterRequest userData)
     {
         var serviceResponse = await _authService.Register(userData);
@@ -13,7 +14,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost]
-
+    [Route("Login")]
     public async Task<ActionResult<ServiceResponse<LoginResponse>>> Login(LoginRequest credentials)
     {
         var serviceResponse = await _authService.Login(credentials);
@@ -21,6 +22,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost]
+    [Route("Refresh")]
     public async Task<ActionResult<ServiceResponse<LoginResponse>>> Refresh(RefreshRequest credentials)
     {
         var serviceResponse = await _authService.Refresh(credentials);

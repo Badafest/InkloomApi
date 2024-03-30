@@ -4,7 +4,7 @@ namespace InkloomApi.Controllers;
 public class PingController : ControllerBase
 {
     [HttpGet]
-    public string Test()
+    public string Index()
     {
         return "PONG";
     }

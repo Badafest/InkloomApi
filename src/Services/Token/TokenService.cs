@@ -24,7 +24,7 @@ public class TokenService(IConfiguration config) : ITokenService
         return code;
     }
 
-    public string GenerateJWT(string sub, string uniqueName, DateTime expiry)
+    public string GenerateJWT(string sub, string uniqueName, DateTime expiry, Dictionary<string, string>? otherClaims = null)
     {
         var signingKey = _config["Jwt:Key"] ?? string.Empty;
         var issuer = _config["Jwt:Issuer"] ?? string.Empty;
@@ -33,11 +33,13 @@ public class TokenService(IConfiguration config) : ITokenService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[] {
+        var defaultClaims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, sub),
                 new Claim(JwtRegisteredClaimNames.UniqueName, uniqueName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
+
+        var claims = defaultClaims.Concat(otherClaims?.Select(entry => new Claim(entry.Key, entry.Value)) ?? []);
 
         var token = new JwtSecurityToken(
             issuer: issuer,
