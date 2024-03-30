@@ -3,12 +3,17 @@ namespace InkloomApi.Dtos;
 public class AuthorResponse
 {
     public string Username { get; set; } = "";
+    public string Avatar { get; set; } = "";
+    public string About { get; set; } = "";
 }
 
-public class BlogResponse
+public class TagResponse
 {
-    public bool Public { get; set; } = true;
-    public BlogStatus Status { get; set; } = BlogStatus.DRAFT;
+    public string Name { get; set; } = "";
+}
+
+public class BlogPreviewResponse
+{
     public AuthorResponse? Author { get; set; }
 
     public string Title { get; set; } = "Untitled Blog";
@@ -16,7 +21,13 @@ public class BlogResponse
     public string? Description { get; set; }
 
     public string? HeaderImage { get; set; }
-    public List<string> Tags { get; set; } = [];
+    public IEnumerable<TagResponse> Tags { get; set; } = [];
+}
+
+public class BlogResponse : BlogPreviewResponse
+{
+    public bool Public { get; set; } = true;
+    public BlogStatus Status { get; set; } = BlogStatus.DRAFT;
 
     public string? Content { get; set; }
 }

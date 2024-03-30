@@ -37,6 +37,8 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
 
 builder.Services.AddControllers();
 

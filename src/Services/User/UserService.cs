@@ -22,7 +22,7 @@ public class UserService(IMapper mapper, DataContext context) : IUserService
             return new(HttpStatusCode.NotFound) { Message = "User not Found" };
         }
         _context.Remove(user);
-        await _context.SoftSaveChangesAsync(user.Id);
+        await _context.SoftSaveChangesAsync();
         return new() { Data = _mapper.Map<UserResponse>(user) };
     }
 
@@ -46,7 +46,7 @@ public class UserService(IMapper mapper, DataContext context) : IUserService
         user.About = updateData.About ?? user.About;
         user.Avatar = updateData.Avatar ?? user.Avatar;
         user.Password = updateData.Password ?? user.Password;
-        await _context.SoftSaveChangesAsync(user.Id);
+        await _context.SoftSaveChangesAsync();
         return new() { Data = _mapper.Map<UserResponse>(user) };
     }
 }

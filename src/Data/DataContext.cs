@@ -14,35 +14,32 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     {
         builder.Entity<User>().HasIndex(u => u.Email).IsUnique();
         builder.Entity<User>().HasIndex(u => u.Username).IsUnique();
-        builder.Entity<User>().HasQueryFilter(u => u.DeletedById == null && u.DeletedDate <= DateTime.MinValue);
+        builder.Entity<User>().HasQueryFilter(u => u.DeletedDate <= DateTime.MinValue);
 
         builder.Entity<Tag>().HasIndex(t => t.Name).IsUnique();
+        builder.Entity<Blog>().HasQueryFilter(u => u.DeletedDate <= DateTime.MinValue);
+
         builder.Entity<BlogTag>().HasKey(bt => new { bt.BlogId, bt.TagId });
-        builder.Entity<Blog>().HasQueryFilter(u => u.DeletedById == null && u.DeletedDate <= DateTime.MinValue);
     }
 
-    public Task<int> SoftSaveChangesAsync(int? changesMadeBy = null)
+    public Task<int> SoftSaveChangesAsync()
     {
         foreach (var entity in ChangeTracker.Entries())
         {
             var state = entity.State;
             string? dateKey = null;
-            string? userKey = null;
 
             switch (state)
             {
                 case EntityState.Added:
                     dateKey = "CreatedDate";
-                    userKey = "CreatedById";
                     break;
                 case EntityState.Modified:
                     dateKey = "UpdatedDate";
-                    userKey = "UpdatedById";
                     break;
                 case EntityState.Deleted:
                     entity.State = EntityState.Modified;
                     dateKey = "DeletedDate";
-                    userKey = "DeletedById";
                     break;
                 default:
                     break;
@@ -51,11 +48,6 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             if (dateKey != null)
             {
                 entity.Property(dateKey).CurrentValue = DateTime.UtcNow;
-            }
-
-            if (userKey != null && changesMadeBy != null)
-            {
-                entity.Property(userKey).CurrentValue = changesMadeBy;
             }
         }
 

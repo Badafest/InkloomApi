@@ -12,16 +12,18 @@ public class BlogController(IBlogService blogService) : ControllerBase
     private readonly IBlogService _blogService = blogService;
 
     [HttpGet("Public")]
-    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetPublicBlogs(SearchPublicBlogRequest searchData)
+    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetPublicBlogs(SearchPublicBlogRequest publicSearchData)
     {
-        var serviceResponse = await _blogService.GetPublicBlogs(searchData);
+        var searchData = new SearchBlogRequest(publicSearchData);
+        var serviceResponse = await _blogService.SearchBlogs(searchData);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
     [HttpGet]
-    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetMyBlogs(SearchOwnBlogRequest searchData)
+    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetMyBlogs(SearchOwnBlogRequest ownSearchData)
     {
-        var serviceResponse = await _blogService.GetMyBlogs(searchData);
+        var searchData = new SearchBlogRequest(ownSearchData) { Author = User?.Identity?.Name ?? "" };
+        var serviceResponse = await _blogService.SearchBlogs(searchData);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
@@ -34,7 +36,7 @@ public class BlogController(IBlogService blogService) : ControllerBase
 
     [HttpGet("{Id}/Preview")]
     [AllowAnonymous]
-    public async Task<ActionResult<ServiceResponse<BlogResponse>>> GetBlogPreview(int Id)
+    public async Task<ActionResult<ServiceResponse<BlogPreviewResponse>>> GetBlogPreview(int Id)
     {
         var serviceResponse = await _blogService.GetBlogPreview(Id);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
@@ -43,7 +45,7 @@ public class BlogController(IBlogService blogService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ServiceResponse<BlogResponse>>> CreateBlog(CreateBlogRequest newBlog)
     {
-        var serviceResponse = await _blogService.CreateBlog(newBlog);
+        var serviceResponse = await _blogService.CreateBlog(newBlog, User?.Identity?.Name ?? "");
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
