@@ -6,19 +6,19 @@ public abstract class ModelBase
 {
     public int Id { get; set; } = 0;
 
-    public DateTimeOffset CreatedDate { get; private set; }
+    public DateTime CreatedDate { get; private set; }
 
-    public int CreatedById { get; set; } = 0;
+    public int? CreatedById { get; set; }
 
     [ForeignKey("CreatedById")]
     public User? CreatedBy { get; set; }
 
-    public DateTimeOffset UpdatedDate { get; private set; }
-    public int UpdatedById { get; set; } = 0;
+    public DateTime UpdatedDate { get; private set; }
+    public int? UpdatedById { get; set; }
     [ForeignKey("UpdatedById")]
     public User? UpdatedBy { get; set; }
-    public DateTimeOffset DeletedDate { get; private set; }
-    public int DeletedById { get; set; } = 0;
+    public DateTime DeletedDate { get; private set; }
+    public int? DeletedById { get; set; }
     [ForeignKey("DeletedById")]
     public User? DeletedBy { get; set; }
 }

@@ -24,7 +24,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         }
         var user = new User { Username = userData.Username, Password = userData.Password, Email = userData.Email };
         _context.Users.Add(user);
-        await _context.SoftSaveChangesAsync(user.Id);
+        await _context.SoftSaveChangesAsync();
         return new() { Data = _mapper.Map<UserResponse>(user) };
     }
 

@@ -17,28 +17,41 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         builder.Entity<BlogTag>().HasKey(bt => new { bt.BlogId, bt.TagId });
     }
 
-    public Task<int> SoftSaveChangesAsync(int changesMadeBy)
+    public Task<int> SoftSaveChangesAsync(int? changesMadeBy = null)
     {
         foreach (var entity in ChangeTracker.Entries())
         {
             var state = entity.State;
+            string? dateKey = null;
+            string? userKey = null;
+
             switch (state)
             {
                 case EntityState.Added:
-                    entity.Property("CreatedDate").CurrentValue = DateTime.UtcNow;
-                    entity.Property("CreatedBy").CurrentValue = changesMadeBy;
+                    dateKey = "CreatedDate";
+                    userKey = "CreatedById";
                     break;
                 case EntityState.Modified:
-                    entity.Property("UpdatedDate").CurrentValue = DateTime.UtcNow;
-                    entity.Property("UpdatedBy").CurrentValue = changesMadeBy;
+                    dateKey = "UpdatedDate";
+                    userKey = "UpdatedById";
                     break;
                 case EntityState.Deleted:
-                    entity.Property("DeletedDate").CurrentValue = DateTime.UtcNow;
-                    entity.Property("DeletedBy").CurrentValue = changesMadeBy;
                     entity.State = EntityState.Modified;
+                    dateKey = "DeletedDate";
+                    userKey = "DeletedById";
                     break;
                 default:
                     break;
+            }
+
+            if (dateKey != null)
+            {
+                entity.Property(dateKey).CurrentValue = DateTime.UtcNow;
+            }
+
+            if (userKey != null && changesMadeBy != null)
+            {
+                entity.Property(userKey).CurrentValue = changesMadeBy;
             }
         }
 
