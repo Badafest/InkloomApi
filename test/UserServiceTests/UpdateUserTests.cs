@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace test;
 
 public partial class UserServiceTests
@@ -11,11 +9,7 @@ public partial class UserServiceTests
 
     public async void UpdateUserWithWeakPasswordThrowsArgumentException(string weakPassword)
     {
-        var updateService = userService.UpdateUser(new()
-        {
-            Id = testUser.Id,
-            Password = weakPassword
-        });
+        var updateService = userService.UpdateUser(testUser.Username, new() { Password = weakPassword });
 
         await Assert.ThrowsAsync<ArgumentException>(() => updateService);
     }
@@ -23,11 +17,7 @@ public partial class UserServiceTests
     [Fact, TestCasePriority(18)]
     public async void UpdateUserWithStrongPasswordReturnsUserResponse()
     {
-        var serviceResponse = await userService.UpdateUser(new()
-        {
-            Id = testUser.Id,
-            Password = "Str0ngP@ssword123"
-        });
+        var serviceResponse = await userService.UpdateUser(testUser.Username, new() { Password = "Str0ngP@ssword123" });
 
         Assert.True(serviceResponse?.Success);
         Assert.Equal(testUser.Username, serviceResponse?.Data?.Username);
@@ -38,12 +28,8 @@ public partial class UserServiceTests
     {
         var about = "I am a handsome user";
         var avatar = "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_square.jpg";
-        var serviceResponse = await userService.UpdateUser(new()
-        {
-            Id = testUser.Id,
-            About = about,
-            Avatar = avatar
-        });
+
+        var serviceResponse = await userService.UpdateUser(testUser.Username, new() { About = about, Avatar = avatar });
 
         Assert.True(serviceResponse?.Success);
         Assert.Equal(testUser.Username, serviceResponse?.Data?.Username);
