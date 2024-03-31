@@ -45,7 +45,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
         var principalRefresh = _tokenService.ValidateJWT(credentials.RefreshToken);
         var principalAccess = _tokenService.ValidateJWT(credentials.AccessToken, false);
-        var username = principalAccess?.Identity?.Name ?? string.Empty;
+        var username = principalAccess?.Identity?.Name ?? "";
         var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
 
         if (user == null || principalRefresh?.Identity?.Name != user.Username)
@@ -63,17 +63,58 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         return new() { Data = await GenerateAuthTokens(user, refreshToken) };
     }
 
+    async public Task<ServiceResponse<LoginResponse>> MagicLogin(string tokenValue)
+    {
 
-    async public Task<ServiceResponse<string?>> GenerateAndSendOTP(string email, TokenType tokenType)
+        var principal = _tokenService.ValidateJWT(tokenValue, true);
+        var email = principal?.Identity?.Name ?? "";
+        var user = await _context.Users.FirstOrDefaultAsync(user => user.Email == email);
+        if (user?.Email != email)
+        {
+            throw _tokenException;
+        }
+
+        var verifyToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.MagicLink && token.UserId == user.Id && token.Value == tokenValue) ?? throw _tokenException;
+        _context.Tokens.Remove(verifyToken);
+
+        if (verifyToken.Value != tokenValue || verifyToken.Expiry < DateTime.UtcNow)
+        {
+
+            await _context.SaveChangesAsync();
+            throw _tokenException;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return new() { Data = await GenerateAuthTokens(user) };
+    }
+
+
+    async public Task<ServiceResponse<UserResponse?>> GenerateAndSendOTP(string email, TokenType tokenType)
     {
         var user = await _context.Users.FirstOrDefaultAsync(user => user.Email == email);
-        if (user?.Email == email)
+
+        if (user == null || user.Email != email || (tokenType == TokenType.MagicLink && !user.EmailVerified))
         {
-            var newOTP = _tokenService.GenerateOTP();
-            var tokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config[$"OtpExpiry:${tokenType}"] ?? "10"));
-            await _context.Tokens.AddAsync(new() { Value = newOTP, Expiry = tokenExpiry });
-            await _context.SaveChangesAsync();
+            return new() { Data = null };
         }
+
+        var newOTP = _tokenService.GenerateOTP();
+        var tokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config[$"OtpExpiry:${tokenType}"] ?? "10"));
+
+        var oldToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == tokenType && token.UserId == user.Id);
+        if (oldToken != null)
+        {
+            oldToken.Value = newOTP;
+            oldToken.Expiry = tokenExpiry;
+        }
+        else
+        {
+            await _context.Tokens.AddAsync(new() { Value = newOTP, Expiry = tokenExpiry, Type = tokenType, UserId = user.Id });
+        }
+
+        await _context.SaveChangesAsync();
+
         return new() { Data = null };
     }
 

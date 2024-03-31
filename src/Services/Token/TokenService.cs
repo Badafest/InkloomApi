@@ -26,9 +26,9 @@ public class TokenService(IConfiguration config) : ITokenService
     }
     public string GenerateJWT(string sub, string uniqueName, DateTime expiry, Dictionary<string, string>? otherClaims = null)
     {
-        var signingKey = _config["Jwt:Key"] ?? string.Empty;
-        var issuer = _config["Jwt:Issuer"] ?? string.Empty;
-        var audience = _config["Jwt:Audience"] ?? string.Empty;
+        var signingKey = _config["Jwt:Key"] ?? "";
+        var issuer = _config["Jwt:Issuer"] ?? "";
+        var audience = _config["Jwt:Audience"] ?? "";
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -56,9 +56,9 @@ public class TokenService(IConfiguration config) : ITokenService
     {
         try
         {
-            var signingKey = _config["Jwt:Key"] ?? string.Empty;
-            var issuer = _config["Jwt:Issuer"] ?? string.Empty;
-            var audience = _config["Jwt:Audience"] ?? string.Empty;
+            var signingKey = _config["Jwt:Key"] ?? "";
+            var issuer = _config["Jwt:Issuer"] ?? "";
+            var audience = _config["Jwt:Audience"] ?? "";
 
             var tokenValidationParameters = new TokenValidationParameters
             {

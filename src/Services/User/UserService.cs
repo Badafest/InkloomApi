@@ -64,4 +64,15 @@ public class UserService(IMapper mapper, DataContext context, IAuthService authS
         return new() { Data = _mapper.Map<UserResponse>(user) };
     }
 
+    public async Task<ServiceResponse<UserResponse?>> VerifyEmail(VerifyEmailRequest updateData)
+    {
+        var user = await _authService.VerifyOTP(updateData.Token, TokenType.EmailVerification, updateData.Email);
+        if (user == null)
+        {
+            return new(HttpStatusCode.BadRequest) { Message = "Invalid Token or Email" };
+        }
+        user.EmailVerified = true;
+        await _context.SoftSaveChangesAsync();
+        return new() { Data = _mapper.Map<UserResponse>(user) };
+    }
 }

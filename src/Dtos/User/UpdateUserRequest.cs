@@ -16,3 +16,10 @@ public class ChangePasswordRequest
     public string Password { get; set; } = "";
 }
 
+public class VerifyEmailRequest
+{
+    public string Token { get; set; } = "";
+
+    public string Email { get; set; } = "";
+}
+

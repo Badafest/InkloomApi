@@ -6,7 +6,7 @@ public class TokenResponse
 }
 public class LoginResponse
 {
-    public string Username { get; set; } = string.Empty;
+    public string Username { get; set; } = "";
     public TokenResponse AccessToken { get; set; } = new();
 
     public TokenResponse RefreshToken { get; set; } = new();
