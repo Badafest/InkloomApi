@@ -7,6 +7,7 @@ public interface IAuthService
     Task<ServiceResponse<LoginResponse>> MagicLogin(string tokenValue);
     Task<ServiceResponse<LoginResponse>> Refresh(RefreshRequest credentials);
     Task<ServiceResponse<UserResponse?>> GenerateAndSendOTP(string email, TokenType tokenType);
+    Task<ServiceResponse<UserResponse?>> GenerateAndSendMagicToken(string email);
 
     Task<User?> VerifyOTP(string tokenValue, TokenType tokenType, string email);
 }
