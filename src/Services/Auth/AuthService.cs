@@ -11,6 +11,8 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
     private readonly ITokenService _tokenService = tokenService;
 
+    private readonly SecurityTokenException _tokenException = new("Invalid Token");
+
     async public Task<ServiceResponse<UserResponse>> Register(RegisterRequest userData)
     {
         var oldUser = await _context.Users.FirstOrDefaultAsync(user => user.Username == userData.Username || user.Email == userData.Email);
@@ -48,17 +50,52 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
         if (user == null || principalRefresh?.Identity?.Name != user.Username)
         {
-            throw new SecurityTokenException("Invalid Token");
+            throw _tokenException;
         }
-        var refreshToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id && token.Value == credentials.RefreshToken) ?? throw new SecurityTokenException("Invalid Tokens");
+        var refreshToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id && token.Value == credentials.RefreshToken) ?? throw _tokenException;
         if (refreshToken.Value != credentials.RefreshToken || refreshToken.Expiry < DateTime.UtcNow)
         {
 
             _context.Tokens.Remove(refreshToken);
             await _context.SaveChangesAsync();
-            throw new SecurityTokenException("Invalid Token");
+            throw _tokenException;
         }
         return new() { Data = await GenerateAuthTokens(user, refreshToken) };
+    }
+
+
+    async public Task<ServiceResponse<string?>> GenerateAndSendOTP(string email, TokenType tokenType)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(user => user.Email == email);
+        if (user?.Email == email)
+        {
+            var newOTP = _tokenService.GenerateOTP();
+            var tokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config[$"OtpExpiry:${tokenType}"] ?? "10"));
+            await _context.Tokens.AddAsync(new() { Value = newOTP, Expiry = tokenExpiry });
+            await _context.SaveChangesAsync();
+        }
+        return new() { Data = null };
+    }
+
+    public async Task<User?> VerifyOTP(string tokenValue, TokenType tokenType, string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(user => user.Email == email);
+        if (user?.Email != email)
+        {
+            return null;
+        }
+        var dbToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == tokenType && token.UserId == user.Id && token.Value == tokenValue);
+        if (dbToken?.Value != tokenValue)
+        {
+            return null;
+        }
+        _context.Tokens.Remove(dbToken);
+        await _context.SaveChangesAsync();
+        if (dbToken.Expiry < DateTime.UtcNow)
+        {
+            return null;
+        }
+        return user;
     }
 
     private async Task<LoginResponse> GenerateAuthTokens(User user, Token? oldRefreshToken = null)

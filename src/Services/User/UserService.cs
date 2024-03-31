@@ -1,12 +1,14 @@
 using System.Net;
 
 namespace InkloomApi.Services;
-public class UserService(IMapper mapper, DataContext context) : IUserService
+public class UserService(IMapper mapper, DataContext context, IAuthService authService) : IUserService
 {
 
     private readonly IMapper _mapper = mapper;
 
     private readonly DataContext _context = context;
+
+    private readonly IAuthService _authService = authService;
 
     public async Task<ServiceResponse<bool>> CheckUsername(string username)
     {
@@ -45,8 +47,21 @@ public class UserService(IMapper mapper, DataContext context) : IUserService
         }
         user.About = updateData.About ?? user.About;
         user.Avatar = updateData.Avatar ?? user.Avatar;
-        user.Password = updateData.Password ?? user.Password;
         await _context.SoftSaveChangesAsync();
         return new() { Data = _mapper.Map<UserResponse>(user) };
     }
+
+
+    public async Task<ServiceResponse<UserResponse>> ChangePassword(ChangePasswordRequest updateData)
+    {
+        var user = await _authService.VerifyOTP(updateData.Token, TokenType.PasswordReset, updateData.Email);
+        if (user == null)
+        {
+            return new(HttpStatusCode.BadRequest) { Message = "Invalid Token or Email" };
+        }
+        user.Password = updateData.Password;
+        await _context.SoftSaveChangesAsync();
+        return new() { Data = _mapper.Map<UserResponse>(user) };
+    }
+
 }

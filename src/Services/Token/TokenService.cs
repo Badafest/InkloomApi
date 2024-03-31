@@ -9,10 +9,11 @@ namespace InkloomApi.Services;
 public class TokenService(IConfiguration config) : ITokenService
 {
     private readonly IConfiguration _config = config;
+
     private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
     private readonly string OTPValidCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    public string GenerateOTP(short length = 6)
+    public string GenerateOTP(short length = 8)
     {
         var randomBytes = new byte[length];
         _rng.GetNonZeroBytes(randomBytes);
@@ -23,7 +24,6 @@ public class TokenService(IConfiguration config) : ITokenService
         }
         return code;
     }
-
     public string GenerateJWT(string sub, string uniqueName, DateTime expiry, Dictionary<string, string>? otherClaims = null)
     {
         var signingKey = _config["Jwt:Key"] ?? string.Empty;

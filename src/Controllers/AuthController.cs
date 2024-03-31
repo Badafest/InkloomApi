@@ -28,4 +28,12 @@ public class AuthController(IAuthService authService) : ControllerBase
         var serviceResponse = await _authService.Refresh(credentials);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
+
+    [HttpPost]
+    [Route("Password")]
+    public async Task<ActionResult<ServiceResponse<string?>>> ResetPassword(ResetPasswordRequest resetRequest)
+    {
+        var serviceResponse = await _authService.GenerateAndSendOTP(resetRequest.Email, TokenType.PasswordReset);
+        return StatusCode((int)serviceResponse.Status, serviceResponse);
+    }
 }

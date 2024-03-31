@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 
 namespace InkloomApi.Controllers;
@@ -5,9 +6,11 @@ namespace InkloomApi.Controllers;
 [Route(DEFAULT_ROUTE)]
 
 [Authorize]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService, ITokenService tokenService) : ControllerBase
 {
     private readonly IUserService _userService = userService;
+
+    private readonly ITokenService _tokenService = tokenService;
 
     [HttpGet]
     public async Task<ActionResult<ServiceResponse<UserResponse>>> Me()
@@ -27,10 +30,18 @@ public class UserController(IUserService userService) : ControllerBase
     }
 
     [HttpPatch]
-    public async Task<ActionResult<ServiceResponse<UserResponse>>> Update(UpdateUserRequest updateData, int Id)
+    public async Task<ActionResult<ServiceResponse<UserResponse>>> Update(UpdateUserRequest updateData)
     {
         var username = User.Identity?.Name ?? string.Empty;
         var serviceResponse = await _userService.UpdateUser(username, updateData);
+        return StatusCode((int)serviceResponse.Status, serviceResponse);
+    }
+
+    [HttpPatch("Password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ServiceResponse<UserResponse>>> ChangePassword(ChangePasswordRequest updateData)
+    {
+        var serviceResponse = await _userService.ChangePassword(updateData);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
