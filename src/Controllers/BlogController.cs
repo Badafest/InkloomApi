@@ -12,7 +12,7 @@ public class BlogController(IBlogService blogService) : ControllerBase
     private readonly IBlogService _blogService = blogService;
 
     [HttpGet("Public")]
-    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetPublicBlogs(SearchPublicBlogRequest publicSearchData)
+    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetPublicBlogs([FromQuery] SearchPublicBlogRequest publicSearchData)
     {
         var searchData = new SearchBlogRequest(publicSearchData);
         var serviceResponse = await _blogService.SearchBlogs(searchData);
@@ -20,7 +20,7 @@ public class BlogController(IBlogService blogService) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetMyBlogs(SearchOwnBlogRequest ownSearchData)
+    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetMyBlogs([FromQuery] SearchOwnBlogRequest ownSearchData)
     {
         var searchData = new SearchBlogRequest(ownSearchData) { Author = User?.Identity?.Name ?? "" };
         var serviceResponse = await _blogService.SearchBlogs(searchData);

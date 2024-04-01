@@ -22,7 +22,7 @@ public class UserController(IUserService userService, IAuthService authService) 
 
     [HttpGet]
     [AllowAnonymous]
-    [Route("Username")]
+    [Route("Check-Username")]
     public async Task<ActionResult<ServiceResponse<bool>>> CheckUsername(string username)
     {
         var serviceResponse = await _userService.CheckUsername(username);
@@ -37,7 +37,7 @@ public class UserController(IUserService userService, IAuthService authService) 
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
-    [HttpPatch("Password")]
+    [HttpPatch("Change-Password")]
     [AllowAnonymous]
     public async Task<ActionResult<ServiceResponse<UserResponse>>> ChangePassword(ChangePasswordRequest updateData)
     {
@@ -45,18 +45,12 @@ public class UserController(IUserService userService, IAuthService authService) 
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
-    [HttpGet("Verify")]
-    public async Task<ActionResult<string?>> GetEmailVerification(string email)
+    [HttpPost("Verify-Email")]
+    public async Task<ActionResult<ServiceResponse<UserResponse?>>> VerifyEmail(VerifyEmailRequest updateData)
     {
-
-        var serviceResponse = await _authService.GenerateAndSendOTP(email, TokenType.EmailVerification);
-        return StatusCode((int)serviceResponse.Status, serviceResponse);
-    }
-
-    [HttpPost("Verify")]
-    public async Task<ActionResult<ServiceResponse<UserResponse>>> VerifyEmail(VerifyEmailRequest updateData)
-    {
-        var serviceResponse = await _userService.VerifyEmail(updateData);
+        var serviceResponse = updateData?.Token != null ?
+            await _userService.VerifyEmail(updateData) :
+            await _authService.GenerateAndSendOTP(updateData?.Email ?? "", TokenType.EmailVerification);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 

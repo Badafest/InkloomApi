@@ -44,7 +44,7 @@ public partial class AuthServiceTests
 
 
     [Fact, TestCasePriority(9)]
-    public async void LoginValidUserReturnsUserResponse()
+    public async void LoginValidUserReturnsLoginResponse()
     {
         var userData = new LoginRequest()
         {

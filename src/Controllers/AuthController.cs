@@ -22,16 +22,16 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost]
-    [Route("Magic-Login")]
-    public async Task<ActionResult<ServiceResponse<UserResponse?>>> MagicLogin(MagicLoginRequest credentials)
+    [Route("Generate-Magic-Link")]
+    public async Task<ActionResult<ServiceResponse<LoginResponse?>>> GenerateMagicLogin(MagicLoginRequest credentials)
     {
-        var serviceResponse = await _authService.GenerateAndSendMagicToken(credentials.Email);
+        var serviceResponse = credentials.Token != null ? await _authService.MagicLogin(credentials.Token): await _authService.GenerateAndSendMagicToken(credentials.Email);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
-    [HttpGet]
-    [Route("Magic-Login")]
-    public async Task<ActionResult<ServiceResponse<LoginResponse>>> MagicLogin(string token)
+    [HttpPost]
+    [Route("Verify-Magic-Link")]
+    public async Task<ActionResult<ServiceResponse<LoginResponse>>> VerifyMagicLogin(string token)
     {
         var serviceResponse = await _authService.MagicLogin(token);
         return StatusCode((int)serviceResponse.Status, serviceResponse);

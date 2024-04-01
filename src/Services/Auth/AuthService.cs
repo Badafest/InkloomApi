@@ -63,7 +63,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         return new() { Data = await GenerateAuthTokens(user, refreshToken) };
     }
 
-    async public Task<ServiceResponse<LoginResponse>> MagicLogin(string tokenValue)
+    async public Task<ServiceResponse<LoginResponse?>> MagicLogin(string tokenValue)
     {
 
         var principal = _tokenService.ValidateJWT(tokenValue, true);
@@ -141,7 +141,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         return user;
     }
 
-    public async Task<ServiceResponse<UserResponse?>> GenerateAndSendMagicToken(string email)
+    public async Task<ServiceResponse<LoginResponse?>> GenerateAndSendMagicToken(string email)
     {
         var magicLinkTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:MagicLink"] ?? "10"));
 
