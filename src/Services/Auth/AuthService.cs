@@ -55,7 +55,6 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         var refreshToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.RefreshToken && token.UserId == user.Id && token.Value == credentials.RefreshToken) ?? throw _tokenException;
         if (refreshToken.Value != credentials.RefreshToken || refreshToken.Expiry < DateTime.UtcNow)
         {
-
             _context.Tokens.Remove(refreshToken);
             await _context.SaveChangesAsync();
             throw _tokenException;
@@ -174,7 +173,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         var accessTokenExpiry = DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:Expiry:Access"] ?? "120"));
 
         var extraClaims = new Dictionary<string, string>([
-            new("email_verified", user.EmailVerified ? "true" : "false")
+            new("email_verified", user.EmailVerified ? "true" : "false"),
         ]);
 
         var accessToken = _tokenService.GenerateJWT(user.Email, user.Username, accessTokenExpiry, extraClaims);

@@ -14,6 +14,8 @@ public partial class User : ModelBase
     public string? About { get; set; }
 
     public AuthType[] AuthTypes { get; set; } = [AuthType.PASSWORD];
+
+    public DateTime? TokenBlacklistTimestamp { get; set; }
     private string ValidEmail = "";
     public string Email
     {

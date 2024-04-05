@@ -26,13 +26,13 @@ builder.Services.AddAuthentication(AUTH_SCHEME)
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? ""))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "")),
       };
     });
 
-builder.Services.AddAuthorizationBuilder().AddPolicy("EmailVerified", policy => policy.RequireClaim("email_verified", "true"));
-
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddAuthorizationBuilder().AddPolicy("EmailVerified", policy => policy.RequireClaim("email_verified", "true"));
 
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
@@ -96,6 +96,8 @@ app.UseExceptionMiddleware();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseTokenBlacklistMiddleware();
 
 app.MapControllers();
 
