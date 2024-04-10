@@ -95,10 +95,11 @@ app.UseExceptionMiddleware();
 
 app.UseAuthentication();
 
-app.UseAuthorization();
-
 app.UseTokenBlacklistMiddleware();
 
+app.UseAuthorization();
+
 app.MapControllers();
+
 
 app.Run();

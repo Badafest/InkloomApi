@@ -66,7 +66,7 @@ public class UserService(IMapper mapper, DataContext context, IAuthService authS
 
     public async Task<ServiceResponse<UserResponse?>> VerifyEmail(VerifyEmailRequest updateData)
     {
-        var user = await _authService.VerifyOTP(updateData.Token, TokenType.EmailVerification, updateData.Email);
+        var user = await _authService.VerifyOTP(updateData?.Token ?? "", TokenType.EmailVerification, updateData?.Email ?? "");
         if (user == null)
         {
             return new(HttpStatusCode.BadRequest) { Message = "Invalid Token or Email" };

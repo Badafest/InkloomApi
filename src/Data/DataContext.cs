@@ -20,6 +20,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         builder.Entity<Blog>().HasQueryFilter(u => u.DeletedDate <= DateTime.MinValue);
 
         builder.Entity<BlogTag>().HasKey(bt => new { bt.BlogId, bt.TagId });
+        builder.Entity<BlogTag>().HasQueryFilter(bt => bt.Blog != null && bt.Blog.DeletedDate <= DateTime.MinValue);
+        builder.Entity<Token>().HasQueryFilter(t => t.User != null && t.User.DeletedDate <= DateTime.MinValue);
     }
 
     public Task<int> SoftSaveChangesAsync()
