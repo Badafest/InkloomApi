@@ -39,7 +39,7 @@ public class EmailService(IOptions<SmtpOptions> options) : IEmailService
         return message;
 
     }
-    public async void SendEmail(EmailOptions options)
+    public async Task SendEmail(EmailOptions options)
     {
         var message = GetMimeMessage(options);
         var cancellationToken = new CancellationToken();

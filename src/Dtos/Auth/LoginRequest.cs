@@ -8,5 +8,4 @@ public class LoginRequest
 public class MagicLoginRequest
 {
     public string Email { get; set; } = "";
-    public string Token { get; set; } = "";
 }

@@ -11,7 +11,7 @@ public class EmailOptions
     public string[]? Attachments { get; set; } = null;
 }
 
-interface IEmailService
+public interface IEmailService
 {
-    void SendEmail(EmailOptions options);
+    Task SendEmail(EmailOptions options);
 }

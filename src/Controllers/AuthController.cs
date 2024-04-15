@@ -25,7 +25,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [Route("Generate-Magic-Link")]
     public async Task<ActionResult<ServiceResponse<LoginResponse?>>> GenerateMagicLogin(MagicLoginRequest credentials)
     {
-        var serviceResponse = credentials.Token != null ? await _authService.MagicLogin(credentials.Token): await _authService.GenerateAndSendMagicToken(credentials.Email);
+        var serviceResponse = await _authService.GenerateAndSendMagicToken(credentials.Email);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 

@@ -2,7 +2,7 @@ using System.Net;
 using Microsoft.IdentityModel.Tokens;
 
 namespace InkloomApi.Services;
-public class AuthService(IConfiguration config, DataContext context, IMapper mapper, ITokenService tokenService) : IAuthService
+public class AuthService(IConfiguration config, DataContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService) : IAuthService
 {
 
     private readonly IConfiguration _config = config;
@@ -10,6 +10,8 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
     private readonly DataContext _context = context;
 
     private readonly ITokenService _tokenService = tokenService;
+
+    private readonly IEmailService _emailService = emailService;
 
     private readonly SecurityTokenException _tokenException = new("Invalid Token");
 
@@ -115,7 +117,12 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         }
 
         await _context.SaveChangesAsync();
-
+        await _emailService.SendEmail(new()
+        {
+            To = new(user.Username, email),
+            TextBody = newOTP,
+            Subject = tokenType.ToString()
+        });
         return new() { Data = null };
     }
 
@@ -165,6 +172,12 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
             _context.Tokens.Add(new() { Value = magicToken, Expiry = magicLinkTokenExpiry, Type = TokenType.MagicLink, UserId = user.Id });
         }
         await _context.SaveChangesAsync();
+        await _emailService.SendEmail(new()
+        {
+            To = new(user.Username, email),
+            TextBody = magicToken,
+            Subject = "Magic Login"
+        });
 
         return new() { };
     }
