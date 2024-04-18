@@ -17,8 +17,8 @@ public class Blog : ModelBase
 
     public string? HeaderImage { get; set; }
 
-    public List<BlogTag> BlogTags { get; } = [];
-    public List<Tag> Tags { get; } = [];
+    public IEnumerable<BlogTag> BlogTags { get; } = [];
+    public IEnumerable<Tag> Tags { get; } = [];
 
     public string? Content { get; set; }
 

@@ -9,7 +9,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
     private readonly DataContext _context = context;
 
     private readonly IMapper _mapper = mapper;
-    public async Task<ServiceResponse<BlogResponse>> CreateBlog(CreateBlogRequest newBlog, string authorUsername)
+    public async Task<ServiceResponse<BlogResponse>> CreateBlog(BlogRequest newBlog, string authorUsername)
     {
         var author = await _context.Users.FirstOrDefaultAsync(user => user.Username == authorUsername);
         if (author?.Username != authorUsername)
@@ -77,7 +77,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         return new() { Data = blogs };
     }
 
-    public async Task<ServiceResponse<BlogResponse>> UpdateBlog(int Id, UpdateBlogRequest updateData)
+    public async Task<ServiceResponse<BlogResponse>> UpdateBlog(int Id, BlogRequest updateData)
     {
         var blog = await _context.Blogs.FirstOrDefaultAsync(blog => blog.Id == Id);
         if (blog?.Id != Id)

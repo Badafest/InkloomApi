@@ -7,11 +7,6 @@ public class AuthorResponse
     public string About { get; set; } = "";
 }
 
-public class TagResponse
-{
-    public string Name { get; set; } = "";
-}
-
 public class BlogPreviewResponse
 {
     public AuthorResponse? Author { get; set; }
@@ -21,7 +16,7 @@ public class BlogPreviewResponse
     public string? Description { get; set; }
 
     public string? HeaderImage { get; set; }
-    public IEnumerable<TagResponse> Tags { get; set; } = [];
+    public IEnumerable<string> Tags { get; set; } = [];
 }
 
 public class BlogResponse : BlogPreviewResponse

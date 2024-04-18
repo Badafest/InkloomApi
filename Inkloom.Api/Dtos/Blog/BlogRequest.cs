@@ -1,6 +1,6 @@
 namespace Inkloom.Api.Dtos;
 
-public class CreateBlogRequest
+public class BlogRequest
 {
     public bool? Public { get; set; } = true;
     public BlogStatus? Status { get; set; } = BlogStatus.DRAFT;
@@ -10,7 +10,7 @@ public class CreateBlogRequest
     public string? Description { get; set; }
 
     public string? HeaderImage { get; set; }
-    public IEnumerable<TagResponse>? Tags { get; set; } = [];
+    public IEnumerable<string>? Tags { get; set; } = [];
 
     public string? Content { get; set; }
 }

@@ -43,14 +43,14 @@ public class BlogController(IBlogService blogService) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ServiceResponse<BlogResponse>>> CreateBlog(CreateBlogRequest newBlog)
+    public async Task<ActionResult<ServiceResponse<BlogResponse>>> CreateBlog(BlogRequest newBlog)
     {
         var serviceResponse = await _blogService.CreateBlog(newBlog, User?.Identity?.Name ?? "");
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
     [HttpPatch("{Id}")]
-    public async Task<ActionResult<ServiceResponse<BlogResponse>>> UpdateBlog(UpdateBlogRequest updateData, int Id)
+    public async Task<ActionResult<ServiceResponse<BlogResponse>>> UpdateBlog(BlogRequest updateData, int Id)
     {
         var serviceResponse = await _blogService.UpdateBlog(Id, updateData);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
