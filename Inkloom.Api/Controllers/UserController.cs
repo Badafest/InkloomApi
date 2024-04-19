@@ -46,6 +46,7 @@ public class UserController(IUserService userService, IAuthService authService) 
     }
 
     [HttpPost("Verify-Email")]
+    [AllowAnonymous]
     public async Task<ActionResult<ServiceResponse<UserResponse?>>> VerifyEmail(VerifyEmailRequest updateData)
     {
         var serviceResponse = updateData?.Token != null ?

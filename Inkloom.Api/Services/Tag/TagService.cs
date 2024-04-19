@@ -10,11 +10,12 @@ public partial class TagService(DataContext context) : ITagService
     {
         if (InvalidSearchRegex().IsMatch(searchText))
         {
-            throw new ArgumentException("Tag names contain letters and space only");
+            throw new ArgumentException("Tag names contain letters only");
         }
         var tags = await _context.Tags
-            .Where(tag => Regex.IsMatch(tag.Name, searchText, RegexOptions.IgnoreCase))
-            .OrderByDescending(tag => tag.Id)
+            .Where(tag => tag.Name.Contains(searchText.ToUpper()))
+            .Include(tag => tag.BlogTags)
+            .OrderByDescending(tag => tag.BlogTags.Count)
             .Take(100)
             .Select(tag => tag.Name)
             .ToArrayAsync();
@@ -22,6 +23,6 @@ public partial class TagService(DataContext context) : ITagService
         return new() { Data = tags };
     }
 
-    [GeneratedRegex("[^a-zA-Z\\s]")]
+    [GeneratedRegex("[^a-zA-Z]")]
     private static partial Regex InvalidSearchRegex();
 }

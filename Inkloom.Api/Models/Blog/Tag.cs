@@ -26,6 +26,7 @@ public partial class Tag
 
     [GeneratedRegex("^[A-Z]{3,}$")]
     private static partial Regex TagNameRegex();
-    public List<BlogTag> BlogTags { get; } = [];
-    public List<Blog> Blogs { get; } = [];
+
+    public List<BlogTag> BlogTags { get; set; } = [];
+    public List<Blog> Blogs { get; set; } = [];
 }

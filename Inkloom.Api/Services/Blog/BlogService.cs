@@ -39,7 +39,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
 
     public async Task<ServiceResponse<BlogResponse>> GetBlogById(int blogId)
     {
-        var blog = await _context.Blogs.FirstOrDefaultAsync(blog => blog.Id == blogId);
+        var blog = await _context.Blogs.Where(blog => blog.Id == blogId).Include(blog => blog.Tags).FirstOrDefaultAsync();
         if (blog?.Id != blogId)
         {
             return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
@@ -49,7 +49,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
 
     public async Task<ServiceResponse<BlogPreviewResponse>> GetBlogPreview(int blogId)
     {
-        var blog = await _context.Blogs.FirstOrDefaultAsync(blog => blog.Id == blogId);
+        var blog = await _context.Blogs.Where(blog => blog.Id == blogId).Include(blog => blog.Tags).FirstOrDefaultAsync();
         if (blog?.Id != blogId)
         {
             return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
@@ -64,11 +64,12 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
         .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
         .Where(blog => searchData.SearchText == null ||
-            Regex.IsMatch(blog.Title, Regex.Escape(searchData.SearchText), RegexOptions.IgnoreCase) ||
+            blog.Title.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase) ||
             blog.Description == null ||
-            Regex.IsMatch(blog.Description, Regex.Escape(searchData.SearchText), RegexOptions.IgnoreCase))
+            blog.Description.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase))
+        .Include(blog => blog.Tags)
         .Where(blog => searchData.Tags == null ||
-            searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name.Equals(searchName, StringComparison.CurrentCultureIgnoreCase))))
+            searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToUpper())))
         .Skip((searchData.Page - 1) * 100)
         .Take(100)
         .Select(blog => _mapper.Map<BlogResponse>(blog))
@@ -84,15 +85,16 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         {
             return new(HttpStatusCode.BadRequest) { Message = "Blog not found" };
         }
+        var updateBlog = _mapper.Map<Blog>(updateData);
 
         blog.Public = updateData.Public ?? blog.Public;
         blog.Status = updateData.Status ?? blog.Status;
-        blog.Title = updateData.Title ?? blog.Title;
-        blog.Description = updateData.Description ?? blog.Description;
-        blog.HeaderImage = updateData.HeaderImage ?? blog.HeaderImage;
-        blog.Content = updateData.Content ?? blog.Content;
+        blog.Title = updateBlog.Title ?? blog.Title;
+        blog.Description = updateBlog.Description ?? blog.Description;
+        blog.HeaderImage = updateBlog.HeaderImage ?? blog.HeaderImage;
+        blog.Content = updateBlog.Content ?? blog.Content;
+        blog.Tags = updateBlog.Tags ?? blog.Tags;
 
-        await _context.AddAsync(blog);
         await _context.SoftSaveChangesAsync();
 
         return new() { Data = _mapper.Map<BlogResponse>(blog) };

@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Inkloom.Api.Models;
 
 public enum BlogStatus { DRAFT, PUBLISHED, ARCHIVED };
@@ -17,9 +15,8 @@ public class Blog : ModelBase
 
     public string? HeaderImage { get; set; }
 
-    public IEnumerable<BlogTag> BlogTags { get; } = [];
-    public IEnumerable<Tag> Tags { get; } = [];
-
+    public List<BlogTag> BlogTags { get; set; } = [];
+    public List<Tag> Tags { get; set; } = [];
     public string? Content { get; set; }
 
 }

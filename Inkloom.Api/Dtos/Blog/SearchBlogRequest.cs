@@ -23,14 +23,22 @@ public class SearchPublicBlogRequest : SearchBlogRequestBase
 
 public class SearchBlogRequest : SearchBlogRequestBase
 {
+    private void MapBaseData(SearchBlogRequestBase searchRequest)
+    {
+        Tags = searchRequest.Tags;
+        SearchText = searchRequest.SearchText;
+        Page = searchRequest.Page;
+    }
     public SearchBlogRequest(SearchOwnBlogRequest ownSearchRequest)
     {
+        MapBaseData(ownSearchRequest);
         Status = ownSearchRequest.Status;
         Public = ownSearchRequest.Public;
     }
 
     public SearchBlogRequest(SearchPublicBlogRequest publicBlogRequest)
     {
+        MapBaseData(publicBlogRequest);
         Author = publicBlogRequest.Author;
         Public = true;
         Status = BlogStatus.PUBLISHED;

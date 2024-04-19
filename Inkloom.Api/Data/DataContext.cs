@@ -7,9 +7,6 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<Blog> Blogs { get; set; }
 
     public DbSet<Tag> Tags { get; set; }
-
-    public DbSet<BlogTag> BlogTags { get; set; }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<User>().HasIndex(u => u.Email).IsUnique();
@@ -19,8 +16,9 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         builder.Entity<Tag>().HasIndex(t => t.Name).IsUnique();
         builder.Entity<Blog>().HasQueryFilter(u => u.DeletedDate <= DateTime.MinValue);
 
-        builder.Entity<BlogTag>().HasKey(bt => new { bt.BlogId, bt.TagId });
-        builder.Entity<BlogTag>().HasQueryFilter(bt => bt.Blog != null && bt.Blog.DeletedDate <= DateTime.MinValue);
+        builder.Entity<Blog>().HasMany(b => b.Tags).WithMany(t => t.Blogs).UsingEntity<BlogTag>();
+        builder.Entity<Tag>().HasMany(t => t.Blogs).WithMany(b => b.Tags).UsingEntity<BlogTag>();
+        builder.Entity<BlogTag>().HasQueryFilter(bt => bt.Blog.DeletedDate <= DateTime.MinValue);
         builder.Entity<Token>().HasQueryFilter(t => t.User != null && t.User.DeletedDate <= DateTime.MinValue);
     }
 
@@ -47,7 +45,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
                     break;
             }
 
-            if (dateKey != null)
+            if (dateKey != null && entity.Entity.GetType().GetProperty(dateKey) != null)
             {
                 entity.Property(dateKey).CurrentValue = DateTime.UtcNow;
             }

@@ -9,19 +9,33 @@ public class BlogTagsResolver : IValueResolver<Blog, BlogPreviewResponse, IEnume
 }
 
 
-public class BlogRequestTagsResolver : IValueResolver<BlogRequest, Blog, IEnumerable<Tag>>
+public class BlogRequestTagsResolver : IValueResolver<BlogRequest, Blog, List<Tag>>
 {
-    public IEnumerable<Tag> Resolve(BlogRequest source, Blog destination, IEnumerable<Tag> destinatinoMember, ResolutionContext context)
+    public List<Tag> Resolve(BlogRequest source, Blog destination, List<Tag> destinatinoMember, ResolutionContext context)
     {
-        return source.Tags?.Select(tag => new Tag() { Name = tag }) ?? [];
+        return source.Tags?.Select(tag => new Tag() { Name = tag.ToUpper() })?.ToList() ?? [];
+    }
+}
+
+public class BlogAuthorResolver : IValueResolver<Blog, BlogPreviewResponse, AuthorResponse?>
+{
+    public AuthorResponse? Resolve(Blog source, BlogPreviewResponse destination, AuthorResponse? destinatinoMember, ResolutionContext context)
+    {
+        if (source.Author == null) { return null; }
+        return new() { Username = source.Author.Username, About = source.Author.About, Avatar = source.Author.Avatar };
     }
 }
 public class BlogProfile : Profile
 {
     public BlogProfile()
     {
-        CreateMap<Blog, BlogPreviewResponse>().ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogTagsResolver()));
-        CreateMap<Blog, BlogResponse>().ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogTagsResolver()));
-        CreateMap<BlogRequest, Blog>().ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogRequestTagsResolver()));
+        CreateMap<Blog, BlogPreviewResponse>().
+            ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogTagsResolver())).
+            ForMember(dest => dest.Author, opt => opt.MapFrom(new BlogAuthorResolver()));
+        CreateMap<Blog, BlogResponse>().
+            ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogTagsResolver())).
+            ForMember(dest => dest.Author, opt => opt.MapFrom(new BlogAuthorResolver()));
+        CreateMap<BlogRequest, Blog>().
+            ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogRequestTagsResolver()));
     }
 }

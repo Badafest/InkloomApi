@@ -3,8 +3,8 @@ namespace Inkloom.Api.Dtos;
 public class AuthorResponse
 {
     public string Username { get; set; } = "";
-    public string Avatar { get; set; } = "";
-    public string About { get; set; } = "";
+    public string? Avatar { get; set; } = "";
+    public string? About { get; set; } = "";
 }
 
 public class BlogPreviewResponse

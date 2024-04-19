@@ -3,7 +3,7 @@ using Inkloom.Api.Services.Email.Templates;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Inkloom.Api.Services;
-public class AuthService(ILogger<AuthService> logger, IConfiguration config, DataContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService) : IAuthService
+public class AuthService(IConfiguration config, DataContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService) : IAuthService
 {
 
     private readonly IConfiguration _config = config;
@@ -13,8 +13,6 @@ public class AuthService(ILogger<AuthService> logger, IConfiguration config, Dat
     private readonly ITokenService _tokenService = tokenService;
 
     private readonly IEmailService _emailService = emailService;
-
-    private readonly ILogger<AuthService> _logger = logger;
 
     private readonly SecurityTokenException _tokenException = new("Invalid Token");
 
@@ -29,7 +27,7 @@ public class AuthService(ILogger<AuthService> logger, IConfiguration config, Dat
         {
             return new(HttpStatusCode.BadRequest) { Message = "Email is already Taken" };
         }
-        var user = new User { Username = userData.Username, Password = userData.Password, Email = userData.Email };
+        var user = new User { Username = userData.Username, Password = userData.Password, Email = userData.Email, TokenBlacklistTimestamp = DateTime.UtcNow };
         _context.Users.Add(user);
         await _context.SoftSaveChangesAsync();
         return new() { Data = _mapper.Map<UserResponse>(user) };
