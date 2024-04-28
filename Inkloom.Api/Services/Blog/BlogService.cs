@@ -1,6 +1,5 @@
 
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace Inkloom.Api.Services;
 
@@ -18,7 +17,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         }
         var blog = _mapper.Map<Blog>(newBlog);
         blog.Author = author;
-
+        await HandleBlogTags(blog, blog.Tags);
         await _context.AddAsync(blog);
         await _context.SoftSaveChangesAsync();
 
@@ -80,7 +79,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
 
     public async Task<ServiceResponse<BlogResponse>> UpdateBlog(int Id, BlogRequest updateData)
     {
-        var blog = await _context.Blogs.FirstOrDefaultAsync(blog => blog.Id == Id);
+        var blog = await _context.Blogs.Where(blog => blog.Id == Id).Include(blog => blog.Tags).FirstOrDefaultAsync();
         if (blog?.Id != Id)
         {
             return new(HttpStatusCode.BadRequest) { Message = "Blog not found" };
@@ -93,10 +92,30 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         blog.Description = updateBlog.Description ?? blog.Description;
         blog.HeaderImage = updateBlog.HeaderImage ?? blog.HeaderImage;
         blog.Content = updateBlog.Content ?? blog.Content;
-        blog.Tags = updateBlog.Tags ?? blog.Tags;
 
+        if (updateData.Tags != null)
+        {
+            await HandleBlogTags(blog, updateBlog.Tags);
+        }
         await _context.SoftSaveChangesAsync();
 
         return new() { Data = _mapper.Map<BlogResponse>(blog) };
+    }
+
+    private async Task HandleBlogTags(Blog blog, IEnumerable<Tag> updatedTags)
+    {
+        var oldTagNames = blog.Tags.Select(tag => tag.Name.ToUpper());
+        blog.Tags.RemoveAll(tag => true);
+        await _context.SaveChangesAsync();
+
+        var updatedTagNames = updatedTags.Select(tag => tag.Name.ToUpper());
+
+        var foundTags = await _context.Tags.Where(tag => updatedTagNames.Contains(tag.Name.ToUpper())).ToArrayAsync();
+        blog.Tags.AddRange(foundTags);
+
+        var foundTagNames = foundTags.Select(tag => tag.Name.ToUpper());
+
+        var newTags = updatedTags.Where(tag => !foundTagNames.Contains(tag.Name));
+        blog.Tags.AddRange(newTags);
     }
 }

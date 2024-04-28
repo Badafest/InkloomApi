@@ -10,7 +10,7 @@ public class BlogRequest
     public string? Description { get; set; }
 
     public string? HeaderImage { get; set; }
-    public IEnumerable<string>? Tags { get; set; } = [];
+    public IEnumerable<string>? Tags { get; set; }
 
     public string? Content { get; set; }
 }

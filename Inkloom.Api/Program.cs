@@ -13,6 +13,11 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddDbContext<DataContext>(options =>
 {
   options.UseNpgsql(builder.Configuration["PgConnectionString"]);
+  if (!builder.Environment.IsProduction())
+  {
+    options.EnableDetailedErrors();
+    options.EnableSensitiveDataLogging();
+  }
 });
 
 builder.Services.AddAuthentication(AUTH_SCHEME)
