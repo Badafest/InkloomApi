@@ -4,7 +4,6 @@ using Microsoft.OpenApi.Models;
 
 using Inkloom.Api.Middlewares;
 using System.Text.Json.Serialization;
-using Inkloom.Api.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,21 +34,9 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthorizationBuilder().AddPolicy("EmailVerified", policy => policy.RequireClaim("email_verified", "true"));
 
+builder.AddEmailService<EmailService>();
+
 builder.Services.AddSingleton<ITokenService, TokenService>();
-builder.Services.AddSingleton<IEmailService, EmailService>()
-.Configure<SmtpOptions>(options =>
-  {
-    var from = builder.Configuration.GetSection("Smtp:From");
-    options.From = new(from["Name"], from["Address"]);
-    options.Host = builder.Configuration["Smtp:Host"] ?? "";
-    var isPortParsed = int.TryParse(builder.Configuration["Smtp:Port"] ?? "", out var port);
-    if (isPortParsed)
-    {
-      options.Port = port;
-    }
-    options.UseSsl = builder.Configuration["Smtp:Ssl"] == "true";
-    options.Password = builder.Configuration["Smtp:Password"] ?? "";
-  });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
