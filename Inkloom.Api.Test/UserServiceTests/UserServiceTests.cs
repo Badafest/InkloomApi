@@ -8,5 +8,5 @@ namespace Inkloom.Api.Test;
 // [TestCollectionPriority(2)]
 public partial class UserServiceTests(IUserService userService)
 {
-    public static readonly User testUser = UserSeed.data[0];
+    public static readonly User testUser = SeedData.Users[0];
 }

@@ -56,9 +56,9 @@ public static class EmailServiceExtensions
         builder.Services.AddSingleton<IEmailService, T>().ConfigureSmtpOptions<T>(builder.Configuration);
     }
 
-    public static void ConfigureSmtpOptions<T>(this IServiceCollection servies, IConfiguration config) where T : EmailService
+    public static void ConfigureSmtpOptions<T>(this IServiceCollection services, IConfiguration config) where T : EmailService
     {
-        ConfigureSmtpOptions<T>(servies, options =>
+        ConfigureSmtpOptions<T>(services, options =>
             {
                 var from = config.GetSection("Smtp:From");
                 options.From = new(from["Name"], from["Address"]);
@@ -73,8 +73,8 @@ public static class EmailServiceExtensions
             });
     }
 
-    public static void ConfigureSmtpOptions<T>(this IServiceCollection servies, Action<SmtpOptions> configure) where T : EmailService
+    public static void ConfigureSmtpOptions<T>(this IServiceCollection services, Action<SmtpOptions> configure) where T : EmailService
     {
-        servies.Configure(configure);
+        services.Configure(configure);
     }
 }
