@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Inkloom.Api.Data": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:12632;http://localhost:12633"
+    }
+  }
+}

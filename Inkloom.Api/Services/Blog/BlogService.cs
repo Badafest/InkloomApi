@@ -82,7 +82,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         var blog = await _context.Blogs.Where(blog => blog.Id == Id).Include(blog => blog.Tags).FirstOrDefaultAsync();
         if (blog?.Id != Id)
         {
-            return new(HttpStatusCode.BadRequest) { Message = "Blog not found" };
+            return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
         }
         var updateBlog = _mapper.Map<Blog>(updateData);
 

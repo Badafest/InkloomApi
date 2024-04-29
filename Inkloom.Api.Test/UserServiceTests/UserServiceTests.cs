@@ -1,4 +1,4 @@
-using Inkloom.Api.Models;
+using Inkloom.Api.Data.Models;
 using Inkloom.Api.Services;
 
 namespace Inkloom.Api.Test;

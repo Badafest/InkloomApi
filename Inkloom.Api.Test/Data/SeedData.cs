@@ -1,4 +1,4 @@
-using Inkloom.Api.Models;
+using Inkloom.Api.Data.Models;
 namespace Inkloom.Api.Test;
 
 public static class SeedData

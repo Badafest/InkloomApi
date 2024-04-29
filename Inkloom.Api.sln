@@ -5,7 +5,9 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inkloom.Api", "Inkloom.Api\Inkloom.Api.csproj", "{CE531CFB-F19E-4F01-83F2-1C167759310D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inkloom.Api.Test", "Inkloom.Api.Test\Inkloom.Api.Test.csproj", "{309ACA20-DF59-41D5-B641-716DDE4DA84F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Inkloom.Api.Test", "Inkloom.Api.Test\Inkloom.Api.Test.csproj", "{309ACA20-DF59-41D5-B641-716DDE4DA84F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inkloom.Api.Data", "Inkloom.Api.Data\Inkloom.Api.Data.csproj", "{397A2E45-1990-4E4D-8B36-FB02C95F01D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{309ACA20-DF59-41D5-B641-716DDE4DA84F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{309ACA20-DF59-41D5-B641-716DDE4DA84F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{309ACA20-DF59-41D5-B641-716DDE4DA84F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{397A2E45-1990-4E4D-8B36-FB02C95F01D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{397A2E45-1990-4E4D-8B36-FB02C95F01D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{397A2E45-1990-4E4D-8B36-FB02C95F01D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{397A2E45-1990-4E4D-8B36-FB02C95F01D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
