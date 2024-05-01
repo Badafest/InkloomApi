@@ -1,20 +1,25 @@
-namespace Inkloom.Api.Services.Email.Templates;
-
-public class ITemplateOptions
+namespace Inkloom.Api.Email.Templates
 {
-    public string[]? preCtaParagraphs;
-    public string? ctaLink;
-    public string? ctaTitle;
-
-    public string[]? postCtaParagraphs;
-}
-public abstract class Template(ITemplateOptions templateOptions) : ITemplate
-{
-
-    private readonly ITemplateOptions _templateOptions = templateOptions;
-    public string GetHtmlBody()
+    public class ITemplateOptions
     {
-        return $@"
+        public string[] preCtaParagraphs;
+        public string ctaLink;
+        public string ctaTitle;
+
+        public string[] postCtaParagraphs;
+    }
+    public abstract class Template : ITemplate
+    {
+
+        private readonly ITemplateOptions _templateOptions;
+
+        public Template(ITemplateOptions templateOptions)
+        {
+            _templateOptions = templateOptions;
+        }
+        public string GetHtmlBody()
+        {
+            return $@"
 <!DOCTYPE html>
 <html lang=""en"">
   <head>
@@ -225,7 +230,7 @@ public abstract class Template(ITemplateOptions templateOptions) : ITemplate
                       margin-bottom: 16px;
                     ""
                   >
-                    {string.Join("<br />", _templateOptions.preCtaParagraphs ?? [])}
+                    {string.Join("<br />", _templateOptions.preCtaParagraphs ?? new string[] { })}
                   </p>
                   <table
                     role=""presentation""
@@ -320,7 +325,7 @@ public abstract class Template(ITemplateOptions templateOptions) : ITemplate
                       margin-bottom: 16px;
                     ""
                   >
-                    {string.Join("<br />", _templateOptions.postCtaParagraphs ?? [])}
+                    {string.Join("<br />", _templateOptions.postCtaParagraphs ?? new string[] { })}
                   </p>
                 </td>
               </tr>
@@ -407,14 +412,15 @@ public abstract class Template(ITemplateOptions templateOptions) : ITemplate
     </table>
   </body>
 </html>
-";
-    }
+    ";
+        }
 
-    public string GetTextBody()
-    {
-        return @$"
-    {string.Join("\n", _templateOptions.preCtaParagraphs ?? [])}
-    {string.Join("\n", _templateOptions.postCtaParagraphs ?? [])}
+        public string GetTextBody()
+        {
+            return $@"
+{string.Join("\n", _templateOptions.preCtaParagraphs ?? new string[] { })}
+{string.Join("\n", _templateOptions.postCtaParagraphs ?? new string[] { })}
         ";
+        }
     }
 }

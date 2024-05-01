@@ -1,6 +1,8 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Inkloom.Api.Extensions;
+using Inkloom.Api.Email;
 
 using Inkloom.Api.Middlewares;
 using System.Text.Json.Serialization;

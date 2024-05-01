@@ -17,7 +17,7 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         }
         var blog = _mapper.Map<Blog>(newBlog);
         blog.Author = author;
-        await HandleBlogTags(blog, blog.Tags);
+        await HandleBlogTags(blog, blog.Tags.GetRange(0, blog.Tags.Count));
         await _context.AddAsync(blog);
         await _context.SoftSaveChangesAsync();
 
@@ -63,9 +63,9 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
         .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
         .Where(blog => searchData.SearchText == null ||
-            blog.Title.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase) ||
+            blog.Title.ToLower().Contains(searchData.SearchText.ToLower()) ||
             blog.Description == null ||
-            blog.Description.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase))
+            blog.Description.ToLower().Contains(searchData.SearchText.ToLower()))
         .Include(blog => blog.Tags)
         .Where(blog => searchData.Tags == null ||
             searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToUpper())))

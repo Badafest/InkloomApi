@@ -1,5 +1,6 @@
 using System.Net;
-using Inkloom.Api.Services.Email.Templates;
+using Inkloom.Api.Email;
+using Inkloom.Api.Email.Templates;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Inkloom.Api.Services;

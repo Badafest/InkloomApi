@@ -9,6 +9,7 @@ public class AuthorResponse
 
 public class BlogPreviewResponse
 {
+    public int Id { get; set; }
     public AuthorResponse? Author { get; set; }
 
     public string Title { get; set; } = "Untitled Blog";
