@@ -15,6 +15,10 @@
 
 # Mono auto generated files
 mono_crash.*
+.mono
+
+# SARIF Viewer
+.sarif
 
 # Build results
 [Dd]ebug/

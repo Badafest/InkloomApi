@@ -1,0 +1,14 @@
+<tr>
+    <td align="center" style="padding:0;Margin:0;padding-top:10px;padding-bottom:10px;font-size:0px">
+        <img src="@Src"
+            alt="@Alt" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic"
+            width="100">
+    </td>
+</tr>
+
+@code{
+    [Parameter]
+    public string Src {get; set;}
+    [Parameter]
+    public string Alt {get; set;}
+}

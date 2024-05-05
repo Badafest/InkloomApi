@@ -1,6 +1,6 @@
 using System.Net;
 using Inkloom.Api.Email;
-using Inkloom.Api.Email.Templates;
+using Inkloom.Api.EmailTemplates;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Inkloom.Api.Services;
@@ -191,12 +191,12 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         }
         await _context.SaveChangesAsync();
 
-        var template = new MagicLoginTemplate(user.Username, magicToken, magicTokenValidity);
+        var template = new MagicLoginTemplate(user.Username, magicToken);
         _emailService.SendEmail(new()
         {
             To = new(user.Username, email),
             TextBody = template.GetTextBody(),
-            HtmlBody = template.GetHtmlBody(),
+            HtmlBody = await template.GetHtmlBody(),
             Subject = "Login to Inkloom"
         });
 

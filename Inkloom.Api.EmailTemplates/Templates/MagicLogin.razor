@@ -1,0 +1,18 @@
+@using Inkloom.Api.EmailTemplates.Components;
+@layout Layout;
+
+<Heading Text=@Greeting />
+<Paragraph
+  Text="You have requested a link in your email to login to inkloom. Please click the button below to proceed." />
+<Button Label="Login to Inkloom" Link="@Link" />
+<Paragraph Text="Button not working? Copy and paste the following link in browser:" />
+<Pre Text="@Link" />
+<Paragraph Text="Please DO NOT SHARE this link to anyone. We never ask for login links or tokens of any kind." />
+
+@code {
+  [Parameter]
+  public string Link { get; set; }
+
+  [Parameter]
+  public string Greeting { get; set; }
+}

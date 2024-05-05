@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Inkloom.Api.Data\Inkloom.Api.Data.csproj" />
     <ProjectReference Include="..\Inkloom.Api.Email\Inkloom.Api.Email.csproj" />
+    <ProjectReference Include="..\Inkloom.Api.EmailTemplates\Inkloom.Api.EmailTemplates.csproj" />
   </ItemGroup>
 
 </Project>
