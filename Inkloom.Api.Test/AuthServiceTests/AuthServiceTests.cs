@@ -4,17 +4,9 @@ using Inkloom.Api.Services;
 
 namespace Inkloom.Api.Test;
 
-[TestCaseOrderer(ordererTypeName: "Inkloom.Api.Test.TestCaseOrderer", ordererAssemblyName: "Inkloom.Api.Test")]
 [Collection("Database Collection")]
-// [TestCollectionPriority(1)]
 public partial class AuthServiceTests(IAuthService authService, ITokenService tokenService, DataContext dataContext)
 {
-    public static readonly User testUser = new()
-    {
-        // A valid username can contain lowercase letters and numbers only
-        Username = "test123",
-        // A valid password is at least 8 characters long and contains at least 1 uppercase, 1 lowercase and 1 number each
-        Password = "Str0ngPassword",
-        Email = "test@mail.com"
-    };
+    public static readonly User testUser = SeedData.Users[0];
+    private readonly string testUserPassword = "Str0ngPassword123";
 }

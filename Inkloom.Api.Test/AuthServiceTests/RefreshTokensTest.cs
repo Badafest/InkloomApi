@@ -5,14 +5,16 @@ namespace Inkloom.Api.Test;
 
 public partial class AuthServiceTests
 {
-    [Fact, TestCasePriority(10)]
+    [Fact]
     public async void RefreshValidTokensReturnsNewTokens()
     {
         var loginResponse = await authService.Login(new()
         {
             Email = testUser.Email,
-            Password = testUser.Password
+            Password = testUserPassword
         });
+
+        Assert.True(loginResponse?.Success);
 
         var serviceResponse = await authService.Refresh(new()
         {
@@ -32,7 +34,7 @@ public partial class AuthServiceTests
         Assert.True(serviceResponse?.Data?.RefreshToken?.Expiry > DateTime.UtcNow);
     }
 
-    [Fact, TestCasePriority(11)]
+    [Fact]
     public async void RefreshInvalidTokensThrowsSecurityTokenException()
     {
         var refreshTask = authService.Refresh(new()
@@ -44,7 +46,7 @@ public partial class AuthServiceTests
         await Assert.ThrowsAsync<SecurityTokenException>(() => refreshTask);
     }
 
-    [Fact, TestCasePriority(12)]
+    [Fact]
     public async void RefreshExpiredTokenThrowsSecurityTokenException()
     {
         var refreshTask = authService.Refresh(new()

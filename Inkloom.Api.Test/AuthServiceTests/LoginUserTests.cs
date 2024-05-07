@@ -5,7 +5,7 @@ namespace Inkloom.Api.Test;
 
 public partial class AuthServiceTests
 {
-    [Theory, TestCasePriority(7)]
+    [Theory]
     [InlineData("")]
     [InlineData("user@mail.com")]
     [InlineData("test154")]
@@ -15,7 +15,7 @@ public partial class AuthServiceTests
         var userData = new LoginRequest()
         {
             Email = email,
-            Password = testUser.Password
+            Password = testUserPassword
         };
         var serviceResponse = await authService.Login(userData);
 
@@ -24,7 +24,7 @@ public partial class AuthServiceTests
     }
 
 
-    [Theory, TestCasePriority(8)]
+    [Theory]
     [InlineData("")]
     [InlineData("WeakPassword")]
     [InlineData("str0ngpassword")]
@@ -43,13 +43,13 @@ public partial class AuthServiceTests
     }
 
 
-    [Fact, TestCasePriority(9)]
+    [Fact]
     public async void LoginValidUserReturnsLoginResponse()
     {
         var userData = new LoginRequest()
         {
             Email = testUser.Email,
-            Password = testUser.Password
+            Password = testUserPassword
         };
         var serviceResponse = await authService.Login(userData);
         Assert.Null(serviceResponse?.Message);
