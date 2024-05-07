@@ -3,7 +3,7 @@ namespace Inkloom.Api.Test;
 public partial class UserServiceTests
 {
 
-    [Fact, TestCasePriority(15)]
+    [Fact]
 
     public async void CheckExistingUsernameReturnsFalse()
     {
@@ -12,7 +12,7 @@ public partial class UserServiceTests
         Assert.False(serviceResponse?.Data);
     }
 
-    [Fact, TestCasePriority(16)]
+    [Fact]
     public async void CheckNonExistingUsernameReturnsTrue()
     {
         var serviceResponse = await userService.CheckUsername(testUser.Username + "1423");

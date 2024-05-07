@@ -8,10 +8,5 @@ namespace Inkloom.Api.Test;
 // [TestCollectionPriority(2)]
 public partial class TokenServiceTests(ITokenService tokenService)
 {
-    public static readonly User testUser = new()
-    {
-        Username = "user",
-        Password = "Str0ngPassword123",
-        Email = "user@inkloom.com"
-    };
+    public static readonly User testUser = SeedData.Users[0];
 }

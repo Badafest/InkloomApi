@@ -1,3 +1,4 @@
+using Inkloom.Api.Data;
 using Inkloom.Api.Data.Models;
 using Inkloom.Api.Services;
 
@@ -6,7 +7,7 @@ namespace Inkloom.Api.Test;
 [TestCaseOrderer(ordererTypeName: "Inkloom.Api.Test.TestCaseOrderer", ordererAssemblyName: "Inkloom.Api.Test")]
 [Collection("Database Collection")]
 // [TestCollectionPriority(1)]
-public partial class AuthServiceTests(IAuthService authService, ITokenService tokenService)
+public partial class AuthServiceTests(IAuthService authService, ITokenService tokenService, DataContext dataContext)
 {
     public static readonly User testUser = new()
     {

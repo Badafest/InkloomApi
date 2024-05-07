@@ -22,18 +22,12 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost]
-    [Route("Generate-Magic-Link")]
-    public async Task<ActionResult<ServiceResponse<LoginResponse?>>> GenerateMagicLogin(MagicLoginRequest credentials)
+    [Route("Magic-Login")]
+    public async Task<ActionResult<ServiceResponse<LoginResponse?>>> MagicLogin(MagicLoginRequest credentials)
     {
-        var serviceResponse = await _authService.GenerateAndSendMagicToken(credentials.Email);
-        return StatusCode((int)serviceResponse.Status, serviceResponse);
-    }
-
-    [HttpPost]
-    [Route("Verify-Magic-Link")]
-    public async Task<ActionResult<ServiceResponse<LoginResponse>>> VerifyMagicLogin(string token)
-    {
-        var serviceResponse = await _authService.MagicLogin(token);
+        var serviceResponse = credentials.Token != null ?
+            await _authService.MagicLogin(credentials.Token) :
+            await _authService.GenerateAndSendMagicToken(credentials.Email);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
@@ -46,8 +40,8 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost]
-    [Route("Password")]
-    public async Task<ActionResult<ServiceResponse<string?>>> ResetPassword(ResetPasswordRequest resetRequest)
+    [Route("Forgot-Password")]
+    public async Task<ActionResult<ServiceResponse<object?>>> ResetPassword(ResetPasswordRequest resetRequest)
     {
         var serviceResponse = await _authService.GenerateAndSendOTP(resetRequest.Email, TokenType.PasswordReset);
         return StatusCode((int)serviceResponse.Status, serviceResponse);

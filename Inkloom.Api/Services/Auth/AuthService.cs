@@ -94,14 +94,13 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         return new() { Data = await GenerateAuthTokens(user) };
     }
 
-
     async public Task<ServiceResponse<UserResponse?>> GenerateAndSendOTP(string email, TokenType tokenType)
     {
         var user = await _context.Users.FirstOrDefaultAsync(user => user.Email == email);
 
         if (user?.Email != email)
         {
-            return new() { Data = null };
+            return new() { };
         }
 
         var newOTP = _tokenService.GenerateOTP();
@@ -125,14 +124,22 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
         await _context.SaveChangesAsync();
 
+        var template = new OTPTemplate(user.Username, newOTP, new Dictionary<TokenType, string>(){
+            {TokenType.EmailVerification, "Email Verification"},
+            {TokenType.PasswordReset, "Password Reset"},
+        }.GetValueOrDefault(tokenType));
         _emailService.SendEmail(new()
         {
             To = new(user.Username, email),
-            TextBody = newOTP,
-            Subject = tokenType.ToString()
+            TextBody = template.GetTextBody(),
+            HtmlBody = await template.GetHtmlBody(),
+            Subject = new Dictionary<TokenType, string>(){
+                {TokenType.EmailVerification, "Verify your Email"},
+                {TokenType.PasswordReset, "Reset your Password"},
+            }.GetValueOrDefault(tokenType),
         });
 
-        return new() { Data = null };
+        return new() { };
     }
 
     public async Task<User?> VerifyOTP(string tokenValue, TokenType tokenType, string email)

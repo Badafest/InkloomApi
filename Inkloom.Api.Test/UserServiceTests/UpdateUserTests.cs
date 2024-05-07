@@ -3,7 +3,7 @@ namespace Inkloom.Api.Test;
 public partial class UserServiceTests
 {
 
-    [Fact, TestCasePriority(19)]
+    [Fact]
     public async void UpdateAboutAndAvatarReturnsUserResponse()
     {
         var about = "I am a handsome user";

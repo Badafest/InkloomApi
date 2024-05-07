@@ -1,4 +1,6 @@
 using Inkloom.Api.Data;
+using Inkloom.Api.Email;
+using Inkloom.Api.Extensions;
 using Inkloom.Api.Profiles;
 using Inkloom.Api.Services;
 using Microsoft.EntityFrameworkCore;

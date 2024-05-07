@@ -6,7 +6,7 @@ namespace Inkloom.Api.Test;
 public partial class UserServiceTests
 {
 
-    [Theory, TestCasePriority(13)]
+    [Theory]
     [InlineData("")]
     [InlineData("@user")]
     [InlineData("user_name")]
@@ -19,7 +19,7 @@ public partial class UserServiceTests
         Assert.Equal(serviceResponse?.Status, HttpStatusCode.NotFound);
     }
 
-    [Fact, TestCasePriority(14)]
+    [Fact]
     public async void GetValidUserReturnsUserResponse()
     {
         var serviceResponse = await userService.GetUser(testUser.Username);
