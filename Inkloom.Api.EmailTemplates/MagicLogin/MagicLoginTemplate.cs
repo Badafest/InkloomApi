@@ -2,9 +2,10 @@ using Inkloom.Api.EmailTemplates.MagicLogin;
 
 namespace Inkloom.Api.EmailTemplates;
 
-public class MagicLoginTemplate(string username, string token) : EmailTemplate<Template>(
+public class MagicLoginTemplate(string username, string baseUrl, string token) : EmailTemplate<Template>(
+    "Magic Login",
     new() {
         { "Greeting", $"Hello, {username}" },
-        { "Link", $"https://inkloom.com/magic-login?token={token}" }
+        { "Link", $"{baseUrl}/magic-login?token={token}" }
     })
 { }

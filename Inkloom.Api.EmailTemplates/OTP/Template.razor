@@ -5,15 +5,18 @@
 <Paragraph Text="@OTPMessage" />
 <Heading Text="@OTPValue" />
 <Paragraph Text="Please DO NOT SHARE this token to anyone. We never ask for login links or tokens of any kind." />
-<Paragraph
-  Text="If you didn't request this code, please reset your password by visiting https://inkloom.com/reset-password" />
+<Paragraph Text="@ResetPasswordMessage" />
 
 @code {
+  [Parameter]
+  public string BaseUrl { get; set; }
   [Parameter]
   public string Greeting { get; set; }
 
   [Parameter]
   public string OTPMessage { get; set; }
+  [Parameter]
+  public string ResetPasswordMessage { get; set; }
 
   [Parameter]
   public string OTPValue { get; set; }

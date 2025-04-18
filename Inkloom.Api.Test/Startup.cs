@@ -11,7 +11,11 @@ namespace Inkloom.Api.Test;
 
 public class Startup
 {
-    public static readonly IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.Test.json").AddEnvironmentVariables().Build();
+    public static readonly IConfiguration config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Test.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
     public static void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton(config);

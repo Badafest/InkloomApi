@@ -50,9 +50,31 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 
+const string InkloomAllowedOrigins = "_inkloomAllowedOrigins";
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy(name: InkloomAllowedOrigins,
+      policy =>
+      {
+        policy.WithOrigins(builder.Configuration["WebBaseUrl"] ?? "") // Allowed origins
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+      });
+});
+
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
   options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+builder.Services.AddHttpLogging(options =>
+{
+  options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestMethod |
+                          Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestPath |
+                          Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestQuery |
+                          Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode |
+                          Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration;
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -100,6 +122,8 @@ else
   app.UseSwaggerUI();
 }
 
+app.UseHttpLogging();
+
 app.UseExceptionMiddleware();
 
 app.UseAuthentication();
@@ -108,7 +132,8 @@ app.UseTokenBlacklistMiddleware();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseCors(InkloomAllowedOrigins);
 
+app.MapControllers();
 
 app.Run();

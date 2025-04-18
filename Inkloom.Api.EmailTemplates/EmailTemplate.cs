@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Inkloom.Api.EmailTemplates;
 
-public abstract class EmailTemplate<IRenderComponent>(Dictionary<string, object> parameters) where IRenderComponent : IComponent
+public abstract class EmailTemplate<IRenderComponent>(string name, Dictionary<string, object> parameters) where IRenderComponent : IComponent
 {
   private readonly Dictionary<string, object> _parameters = parameters;
   public async Task<string> GetHtmlBody()
@@ -15,11 +15,16 @@ public abstract class EmailTemplate<IRenderComponent>(Dictionary<string, object>
     HtmlRenderer renderer = HtmlRendererFactory.GetRenderer();
     return await renderer.Dispatcher.InvokeAsync(async () =>
     {
-      var parameters = ParameterView.FromDictionary(_parameters);
-      var htmlString = (await renderer.RenderComponentAsync<IRenderComponent>(parameters)).ToHtmlString();
-      var layoutString = (await renderer.RenderComponentAsync<Layout>()).ToHtmlString();
+      var bodyParameters = ParameterView.FromDictionary(_parameters);
+      var bodyHtml = (await renderer.RenderComponentAsync<IRenderComponent>(bodyParameters)).ToHtmlString();
+
+      var layoutParameters = ParameterView.FromDictionary(new Dictionary<string, object>(){
+        {"Title", $"Inkloom - {name}"},
+      });
+
+      var layoutString = (await renderer.RenderComponentAsync<Layout>(layoutParameters)).ToHtmlString();
       await renderer.DisposeAsync();
-      return layoutString.Replace("{{BODY}}", htmlString);
+      return layoutString.Replace("{{BODY}}", bodyHtml);
     });
   }
 

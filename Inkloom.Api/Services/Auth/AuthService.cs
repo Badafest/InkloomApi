@@ -127,7 +127,8 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         var template = new OTPTemplate(user.Username, newOTP, new Dictionary<TokenType, string>(){
             {TokenType.EmailVerification, "Email Verification"},
             {TokenType.PasswordReset, "Password Reset"},
-        }.GetValueOrDefault(tokenType));
+        }.GetValueOrDefault(tokenType), _config["WebBaseUrl"]);
+
         _emailService.SendEmail(new()
         {
             To = new(user.Username, email),
@@ -198,7 +199,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         }
         await _context.SaveChangesAsync();
 
-        var template = new MagicLoginTemplate(user.Username, magicToken);
+        var template = new MagicLoginTemplate(user.Username, _config["WebBaseUrl"], magicToken);
         _emailService.SendEmail(new()
         {
             To = new(user.Username, email),
