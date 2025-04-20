@@ -22,6 +22,14 @@ builder.Services.AddDbContext<DataContext>(options =>
   }
 });
 
+// Run database migration
+if (bool.TryParse(builder.Configuration["MigrateDatabase"], out bool migrateDb) && migrateDb)
+{
+  var dbOptionsBuilder = new DbContextOptionsBuilder<DataContext>();
+  dbOptionsBuilder.UseNpgsql(builder.Configuration["PgConnectionString"]);
+  new DataContext(dbOptionsBuilder.Options).Database.Migrate();
+}
+
 builder.Services.AddAuthentication(AUTH_SCHEME)
     .AddJwtBearer(options =>
     {

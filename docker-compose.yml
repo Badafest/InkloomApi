@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:latest
+    container_name: inkloom_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inkloom
+    ports:
+      - "5432:5432"
+    networks:
+      - inkloom_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: inkloom_api
+    container_name: inkloom_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - inkloom_network
+
+networks:
+  inkloom_network:
