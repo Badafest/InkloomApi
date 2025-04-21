@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using MimeKit;
 
 namespace Inkloom.Api.Email
@@ -13,6 +14,6 @@ namespace Inkloom.Api.Email
 
     public interface IEmailService
     {
-        void SendEmail(EmailOptions options);
+        Task SendEmail(EmailOptions options);
     }
 }

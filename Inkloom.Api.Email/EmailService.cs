@@ -1,6 +1,7 @@
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using System.Threading.Tasks;
 
 namespace Inkloom.Api.Email
 {
@@ -42,7 +43,7 @@ namespace Inkloom.Api.Email
             return message;
 
         }
-        public async void SendEmail(EmailOptions options)
+        public async Task SendEmail(EmailOptions options)
         {
             var message = GetMimeMessage(options);
             await _client.ConnectAsync(_options.Host, _options.Port, _options.UseSsl);

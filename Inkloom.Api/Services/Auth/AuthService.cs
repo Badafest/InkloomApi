@@ -132,7 +132,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
             {TokenType.PasswordReset, "Password Reset"},
         }.GetValueOrDefault(tokenType), _config["WebBaseUrl"]);
 
-        _emailService.SendEmail(new()
+        await _emailService.SendEmail(new()
         {
             To = new(user.Username, email),
             TextBody = template.GetTextBody(),
@@ -203,7 +203,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
         await _context.SaveChangesAsync();
 
         var template = new MagicLoginTemplate(user.Username, _config["WebBaseUrl"], magicToken);
-        _emailService.SendEmail(new()
+        await _emailService.SendEmail(new()
         {
             To = new(user.Username, email),
             TextBody = template.GetTextBody(),

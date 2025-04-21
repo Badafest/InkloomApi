@@ -2,9 +2,10 @@ using System.Net;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Inkloom.Api.Middlewares;
-public class ExceptionMiddleware(RequestDelegate next)
+public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
     private readonly RequestDelegate _next = next;
+    private readonly ILogger<ExceptionMiddleware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -22,6 +23,7 @@ public class ExceptionMiddleware(RequestDelegate next)
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception: exception, "Handled Exception");
             await Handler(context, exception);
         }
     }
