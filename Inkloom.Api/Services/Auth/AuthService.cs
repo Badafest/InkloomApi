@@ -19,7 +19,10 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
     async public Task<ServiceResponse<UserResponse>> Register(RegisterRequest userData)
     {
-        var oldUser = await _context.Users.FirstOrDefaultAsync(user => user.Username == userData.Username || user.Email == userData.Email);
+        var oldUser = await _context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(user => user.Username == userData.Username || user.Email == userData.Email);
+
         if (oldUser?.Username == userData.Username)
         {
             return new(HttpStatusCode.BadRequest) { Message = "Username is already Taken" };
