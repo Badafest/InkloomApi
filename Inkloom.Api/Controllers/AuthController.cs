@@ -26,8 +26,18 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<ActionResult<ServiceResponse<LoginResponse?>>> MagicLogin(MagicLoginRequest credentials)
     {
         var serviceResponse = credentials.Token != null ?
-            await _authService.MagicLogin(credentials.Token) :
-            await _authService.GenerateAndSendMagicToken(credentials.Email);
+            await _authService.MagicLogin(credentials.Token) : credentials.Email != null ?
+            await _authService.GenerateAndSendMagicToken(credentials.Email) :
+            new(System.Net.HttpStatusCode.BadRequest) { Message = "Email or Token is required" };
+
+        return StatusCode((int)serviceResponse.Status, serviceResponse);
+    }
+
+    [HttpPost]
+    [Route("SSO-Login")]
+    public async Task<ActionResult<ServiceResponse<LoginResponse?>>> GoogleLogin(SsoLoginRequest credentials)
+    {
+        var serviceResponse = await _authService.SsoLogin(credentials.Token, credentials.Type);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 

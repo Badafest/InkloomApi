@@ -1,10 +1,11 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using Inkloom.Api.Email;
 using Inkloom.Api.EmailTemplates;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Inkloom.Api.Services;
-public class AuthService(IConfiguration config, DataContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService) : IAuthService
+public partial class AuthService(IConfiguration config, DataContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService) : IAuthService
 {
 
     private readonly IConfiguration _config = config;
@@ -19,22 +20,50 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
     async public Task<ServiceResponse<UserResponse>> Register(RegisterRequest userData)
     {
+        var newUser = new User
+        {
+            Username = userData.Type == AuthType.PASSWORD ? userData.Username : "user0000",
+            Password = userData.Type == AuthType.PASSWORD ? userData.Password : "",
+            Email = userData.Type == AuthType.PASSWORD ? userData.Email : "user@inkloom.local",
+            TokenBlacklistTimestamp = DateTime.UtcNow,
+            ProfileComplete = true
+        };
+
+        if (userData.Type != AuthType.PASSWORD)
+        {
+            var payload = userData.Type switch
+            {
+                AuthType.GOOGLE => await _tokenService.ValidateGoogleToken(userData.Password),
+                AuthType.FACEBOOK => await _tokenService.ValidateFacebookToken(userData.Password),
+                _ => throw new ArgumentException("Invalid auth type")
+            };
+
+            // replace user properties
+            newUser.Avatar = payload.Avatar;
+            newUser.FacebookId = payload.FacebookId;
+            newUser.Email = payload.Email;
+            newUser.Username = payload.Username;
+            newUser.EmailVerified = payload.EmailVerified;
+            newUser.ProfileComplete = !MissingUsernameRegex().IsMatch(payload.Username) && !payload.Email.EndsWith(".local");
+            newUser.AuthTypes = [userData.Type];
+        }
+
         var oldUser = await _context.Users
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(user => user.Username == userData.Username || user.Email == userData.Email);
+            .FirstOrDefaultAsync(user => user.Username == newUser.Username || user.Email == newUser.Email);
 
-        if (oldUser?.Username == userData.Username)
+        if (oldUser?.Username == newUser.Username)
         {
             return new(HttpStatusCode.BadRequest) { Message = "Username is already Taken" };
         }
-        if (oldUser?.Email == userData.Email)
+        if (oldUser?.Email == newUser.Email)
         {
             return new(HttpStatusCode.BadRequest) { Message = "Email is already Taken" };
         }
-        var user = new User { Username = userData.Username, Password = userData.Password, Email = userData.Email, TokenBlacklistTimestamp = DateTime.UtcNow };
-        _context.Users.Add(user);
+
+        _context.Users.Add(newUser);
         await _context.SoftSaveChangesAsync();
-        return new() { Data = _mapper.Map<UserResponse>(user) };
+        return new() { Data = _mapper.Map<UserResponse>(newUser) };
     }
 
     async public Task<ServiceResponse<LoginResponse>> Login(LoginRequest credentials)
@@ -50,8 +79,8 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
     async public Task<ServiceResponse<LoginResponse>> Refresh(RefreshRequest credentials)
     {
 
-        var principalRefresh = _tokenService.ValidateJWT(credentials.RefreshToken);
-        var principalAccess = _tokenService.ValidateJWT(credentials.AccessToken, false);
+        var principalRefresh = _tokenService.ValidateInkloomToken(credentials.RefreshToken);
+        var principalAccess = _tokenService.ValidateInkloomToken(credentials.AccessToken, false);
         var username = principalAccess?.Identity?.Name ?? "";
         var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
 
@@ -71,8 +100,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
 
     async public Task<ServiceResponse<LoginResponse?>> MagicLogin(string tokenValue)
     {
-
-        var principal = _tokenService.ValidateJWT(tokenValue, true);
+        var principal = _tokenService.ValidateInkloomToken(tokenValue, true);
         var username = principal?.Identity?.Name ?? "";
         var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
         if (user?.Username != username)
@@ -80,7 +108,11 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
             throw _tokenException;
         }
 
-        var verifyToken = await _context.Tokens.FirstOrDefaultAsync(token => token.Type == TokenType.MagicLink && token.Value == tokenValue && token.UserId == user.Id) ?? throw _tokenException;
+        var verifyToken = await _context.Tokens.FirstOrDefaultAsync(
+            token => token.Type == TokenType.MagicLink &&
+                token.Value == tokenValue &&
+                token.UserId == user.Id) ?? throw _tokenException;
+
         _context.Tokens.Remove(verifyToken);
 
         if (verifyToken.Value != tokenValue || verifyToken.Expiry < DateTime.UtcNow)
@@ -90,7 +122,7 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
             throw _tokenException;
         }
 
-        _ = user.AuthTypes.Append(AuthType.MAGICLINK);
+        user.AuthTypes = [.. user.AuthTypes, AuthType.MAGICLINK];
 
         await _context.SaveChangesAsync();
 
@@ -246,4 +278,52 @@ public class AuthService(IConfiguration config, DataContext context, IMapper map
             RefreshToken = new() { Value = refreshToken, Expiry = refreshTokenExpiry }
         };
     }
+
+    public async Task<ServiceResponse<LoginResponse?>> SsoLogin(string tokenValue, AuthType authType)
+    {
+        var payload = authType switch
+        {
+            AuthType.GOOGLE => await _tokenService.ValidateGoogleToken(tokenValue),
+            AuthType.FACEBOOK => await _tokenService.ValidateFacebookToken(tokenValue),
+            _ => throw new ArgumentException("Invalid auth type")
+        };
+        // find user by email or facebook id to sync multiple sso providers
+        var user = await _context.Users.FirstOrDefaultAsync(
+            user => !string.IsNullOrEmpty(user.Email) && user.Email == payload.Email ||
+            !string.IsNullOrEmpty(user.FacebookId) && user.FacebookId == payload.FacebookId);
+
+        if (user != null)
+        {
+            // update user profile info
+            user.Avatar ??= payload.Avatar;
+            user.FacebookId ??= payload.FacebookId;
+            user.Email ??= payload.Email;
+            user.EmailVerified = user.EmailVerified || payload.EmailVerified;
+            user.ProfileComplete = !MissingUsernameRegex().IsMatch(user.Username) && !user.Email.EndsWith(".local");
+            user.AuthTypes = [.. user.AuthTypes, authType];
+            await _context.SaveChangesAsync();
+            return new() { Data = await GenerateAuthTokens(user) };
+        }
+
+        var newUser = new User
+        {
+            Avatar = payload.Avatar,
+            FacebookId = payload.FacebookId,
+            Email = payload.Email,
+            EmailVerified = payload.EmailVerified,
+            ProfileComplete = !MissingUsernameRegex().IsMatch(payload.Username) && !payload.Email.EndsWith(".local"),
+            Username = payload.Username,
+            Password = "",
+            TokenBlacklistTimestamp = DateTime.UtcNow,
+            AuthTypes = [authType]
+        };
+
+        _context.Users.Add(newUser);
+        await _context.SoftSaveChangesAsync();
+
+        return new() { Data = await GenerateAuthTokens(newUser) };
+    }
+
+    [GeneratedRegex("user\\d{4}")]
+    private static partial Regex MissingUsernameRegex();
 }

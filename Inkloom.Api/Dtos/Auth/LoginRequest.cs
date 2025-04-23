@@ -10,3 +10,9 @@ public class MagicLoginRequest
     public string? Email { get; set; } = "";
     public string? Token { get; set; } = "";
 }
+
+public class SsoLoginRequest
+{
+    public AuthType Type { get; set; } = AuthType.GOOGLE;
+    public string Token { get; set; } = "";
+}

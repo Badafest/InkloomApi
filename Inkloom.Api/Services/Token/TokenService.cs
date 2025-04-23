@@ -3,24 +3,27 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.RegularExpressions;
+using System.Text.Json.Nodes;
 
 namespace Inkloom.Api.Services;
 
-public class TokenService(IConfiguration config) : ITokenService
+public partial class TokenService(IConfiguration config, ILogger<TokenService> logger) : ITokenService
 {
     private readonly IConfiguration _config = config;
-
+    private readonly ILogger<TokenService> _logger = logger;
     private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
     private readonly string OTPValidCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    public string GenerateOTP(short length = 8)
+    public string GenerateOTP(short length = 8, string? validCharacters = null)
     {
         var randomBytes = new byte[length];
         _rng.GetNonZeroBytes(randomBytes);
         var code = "";
+        var characters = validCharacters ?? OTPValidCharacters;
         foreach (var randomByte in randomBytes)
         {
-            code += OTPValidCharacters[randomByte % (OTPValidCharacters.Length - 1)];
+            code += characters[randomByte % (characters.Length - 1)];
         }
         return code;
     }
@@ -52,7 +55,7 @@ public class TokenService(IConfiguration config) : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public ClaimsPrincipal ValidateJWT(string token, bool checkExpiry = true)
+    public ClaimsPrincipal ValidateInkloomToken(string token, bool checkExpiry = true)
     {
         try
         {
@@ -76,9 +79,73 @@ public class TokenService(IConfiguration config) : ITokenService
                 throw new Exception();
             return principal;
         }
-        catch
+        catch (Exception exception)
         {
+            _logger.LogError(exception, "Inkloom Token Exception");
             throw new SecurityTokenException("Invalid Token");
         }
     }
+
+    public async Task<User> ValidateGoogleToken(string token)
+    {
+        try
+        {
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetStringAsync($"https://www.googleapis.com/oauth2/v1/userinfo?access_token={token}") ?? throw new Exception();
+            var payload = JsonNode.Parse(response) ?? throw new Exception();
+            var email = payload["email"]?.GetValue<string>() ?? throw new Exception();
+
+            if (!payload["verified_email"]?.GetValue<bool>() ?? throw new Exception())
+            {
+                throw new Exception();
+            }
+
+            return new()
+            {
+                Email = email,
+                Username = DefaultUsername(payload["name"]?.GetValue<string>() ?? ""),
+                Avatar = payload["picture"]?.GetValue<string>(),
+                EmailVerified = true
+            };
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Google Token Exception");
+            throw new SecurityTokenException("Invalid Token");
+        }
+    }
+
+    public async Task<User> ValidateFacebookToken(string token)
+    {
+        try
+        {
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetStringAsync($"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={token}") ?? throw new Exception();
+            var payload = JsonNode.Parse(response) ?? throw new Exception();
+            var facebookId = payload["id"]?.GetValue<string>() ?? throw new Exception();
+            return new()
+            {
+                Email = payload["email"]?.GetValue<string>() ?? $"{facebookId}@facebook.local",
+                Username = DefaultUsername(payload["name"]?.GetValue<string>() ?? ""),
+                Avatar = payload["picture"]?["data"]?["url"]?.GetValue<string>(),
+                FacebookId = facebookId,
+            };
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Facebook Token Exception");
+            throw new SecurityTokenException("Invalid Token");
+        }
+    }
+
+    private string DefaultUsername(string name)
+    {
+        var testUsername = name.Split(" ").ElementAt(0).ToLower();
+        var suffix = GenerateOTP(4, "0123456789");
+        return (DefaultUsernameRegex().IsMatch(testUsername + suffix) ? testUsername : "user") + suffix;
+    }
+
+
+    [GeneratedRegex("^[a-z]+[0-9]{4}$")]
+    public static partial Regex DefaultUsernameRegex();
 }

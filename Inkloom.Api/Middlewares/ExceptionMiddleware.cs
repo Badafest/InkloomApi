@@ -15,15 +15,17 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
         catch (ArgumentException exception)
         {
+            _logger.LogError(exception: exception, "Argument Exception");
             await Handler(context, exception, HttpStatusCode.BadRequest);
         }
         catch (SecurityTokenException exception)
         {
+            _logger.LogError(exception: exception, "Security Token Exception");
             await Handler(context, exception, HttpStatusCode.BadRequest);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception: exception, "Handled Exception");
+            _logger.LogError(exception: exception, "Generic Exception");
             await Handler(context, exception);
         }
     }

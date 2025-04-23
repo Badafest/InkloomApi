@@ -20,7 +20,7 @@ public partial class TokenServiceTests
 
         Assert.NotNull(jwt);
 
-        var principal = tokenService.ValidateJWT(jwt);
+        var principal = tokenService.ValidateInkloomToken(jwt);
 
         Assert.Equal(testUser.Username, principal.Identity?.Name);
     }

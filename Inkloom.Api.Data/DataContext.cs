@@ -4,6 +4,16 @@ using Microsoft.EntityFrameworkCore;
 namespace Inkloom.Api.Data;
 public class DataContext(DbContextOptions<DataContext> options) : DbContext(options)
 {
+    private static DbContextOptions<DataContext> BuildOptions()
+    {
+        var connectionString = Environment.GetEnvironmentVariable("PGSQLCONSTR");
+        var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
+        optionsBuilder.UseNpgsql(connectionString);
+        return optionsBuilder.Options;
+    }
+
+    // empty constructor for migrations
+    public DataContext() : this(BuildOptions()) { }
     public DbSet<User> Users { get; set; }
     public DbSet<Token> Tokens { get; set; }
 

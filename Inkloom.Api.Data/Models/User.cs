@@ -9,12 +9,25 @@ public partial class User : ModelBase
 {
     public bool EmailVerified { get; set; } = false;
 
+    public bool ProfileComplete { get; set; } = true;
+
     public string? Avatar { get; set; }
 
     public string? About { get; set; }
 
-    public AuthType[] AuthTypes { get; set; } = [AuthType.PASSWORD];
-
+    private AuthType[] _AuthTypes = [AuthType.PASSWORD];
+    public AuthType[] AuthTypes
+    {
+        get
+        {
+            return _AuthTypes;
+        }
+        set
+        {
+            _AuthTypes = [.. value.Distinct()];
+        }
+    }
+    public string? FacebookId { get; set; }
     public DateTime? TokenBlacklistTimestamp { get; set; }
     private string ValidEmail = "";
     public string Email
@@ -60,6 +73,12 @@ public partial class User : ModelBase
         }
         set
         {
+            // allow empty passwords (for SSO Login)
+            if (value.Length == 0)
+            {
+                PasswordHash = "";
+                return;
+            }
             if (!PasswordRegex().IsMatch(value))
             {
                 throw new ArgumentException("Password must contain at least 8 characters and at least 1 uppercase letter, 1 lowercase letter, and 1 number");
@@ -91,6 +110,11 @@ public partial class User : ModelBase
 
     public bool VerifyPassword(string password)
     {
+        // do not verify empty passwords
+        if (password.Length == 0)
+        {
+            return false;
+        }
         var result = hasher.VerifyHashedPassword(this, Password, password);
         if (result == PasswordVerificationResult.Success)
         {
