@@ -6,27 +6,39 @@ using Inkloom.Api.Email;
 
 using Inkloom.Api.Middlewares;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+string dbConnectionString = builder.Configuration["PgConnectionString"] ?? "";
+
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
-  options.UseNpgsql(builder.Configuration["PgConnectionString"]);
+  options.UseNpgsql(dbConnectionString);
   if (!builder.Environment.IsProduction())
   {
     options.EnableDetailedErrors();
     options.EnableSensitiveDataLogging();
   }
+}).AddSqlDbRecordManager(new()
+{
+  DbProviderFactory = NpgsqlFactory.Instance, // use Npgsql as db factory,
+  ConnectionString = dbConnectionString
+}).AddFileAssetManager(new()
+{
+  BaseDirectory = builder.Configuration["AssetsBaseDirectory"] ?? "",
+  GroupByAssetType = true
 });
 
 // Run database migration
 if (bool.TryParse(builder.Configuration["MigrateDatabase"], out bool migrateDb) && migrateDb)
 {
   var dbOptionsBuilder = new DbContextOptionsBuilder<DataContext>();
-  dbOptionsBuilder.UseNpgsql(builder.Configuration["PgConnectionString"]);
+  dbOptionsBuilder.UseNpgsql(dbConnectionString);
   new DataContext(dbOptionsBuilder.Options).Database.Migrate();
 }
 
@@ -49,7 +61,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthorizationBuilder().AddPolicy("EmailVerified", policy => policy.RequireClaim("email_verified", "true"));
 
-builder.AddEmailService<EmailService>();
+builder.Services.AddEmailService<EmailService>(builder.Configuration);
 
 builder.Services.AddSingleton<ITokenService, TokenService>();
 

@@ -28,5 +28,8 @@ services:
     networks:
       - inkloom_network
 
+    volumes:
+      - ./assets:/assets
+
 networks:
   inkloom_network:

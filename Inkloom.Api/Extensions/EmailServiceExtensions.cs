@@ -4,9 +4,10 @@ namespace Inkloom.Api.Extensions
 {
     public static class EmailServiceExtensions
     {
-        public static void AddEmailService<T>(this WebApplicationBuilder builder) where T : EmailService
+        public static IServiceCollection AddEmailService<T>(this IServiceCollection services, IConfiguration configuration) where T : EmailService
         {
-            builder.Services.AddSingleton<IEmailService, T>().ConfigureSmtpOptions<T>(builder.Configuration);
+            services.AddSingleton<IEmailService, T>().ConfigureSmtpOptions<T>(configuration);
+            return services;
         }
 
         public static void ConfigureSmtpOptions<T>(this IServiceCollection services, IConfiguration config) where T : EmailService
