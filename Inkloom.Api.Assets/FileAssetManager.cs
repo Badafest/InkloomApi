@@ -60,7 +60,7 @@ public class FileAssetManager(IAssetRecordManager recordManager, FileAssetManage
             Record = GetAssetRecord(id)
         };
 
-        if (!Directory.Exists(asset.Record.FilePath))
+        if (!File.Exists(asset.Record.FilePath))
         {
             return asset;
         }

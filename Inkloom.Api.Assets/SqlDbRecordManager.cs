@@ -82,7 +82,8 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         command.CommandType = CommandType.Text;
         command.CommandText = query;
 
-        AddDbParameter(command, "@Id", HashMD5(record.FilePath));
+        record.Id = HashMD5(record.FilePath);
+        AddDbParameter(command, "@Id", record.Id);
         AddDbParameter(command, "@FilePath", record.FilePath);
         AddDbParameter(command, "@Name", record.Name);
         AddDbParameter(command, "@Author", record.Author);

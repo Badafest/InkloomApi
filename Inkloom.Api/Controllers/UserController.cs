@@ -31,7 +31,7 @@ public class UserController(IUserService userService, IAuthService authService, 
     }
 
     [HttpPatch]
-    public async Task<ActionResult<ServiceResponse<UserResponse>>> Update([FromForm] UpdateUserRequest updateData, IFormFile avatarImage)
+    public async Task<ActionResult<ServiceResponse<UserResponse>>> Update([FromForm] UpdateUserRequest updateData, IFormFile? avatarImage = null)
     {
         if (avatarImage?.Length > 0)
         {
