@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Inkloom.Api.Assets;
 
 namespace Inkloom.Api.Extensions;
@@ -7,7 +6,7 @@ public static class FileAssetManagerExtensions
 {
     public static IServiceCollection AddFileAssetManager(this IServiceCollection services, FileAssetManagerOptions options)
     {
-        services.AddSingleton(sp =>
+        services.AddSingleton<IAssetManager>(sp =>
         {
             var recordManager = sp.GetRequiredService<IAssetRecordManager>();
             return new FileAssetManager(recordManager, options);
@@ -23,7 +22,7 @@ public static class SqlDbRecordManagerExtensions
     {
         var dbRecordManager = new SqlDbRecordManager(options);
         dbRecordManager.EnsureTableExists();
-        services.AddSingleton(dbRecordManager);
+        services.AddSingleton<IAssetRecordManager>(dbRecordManager);
         return services;
     }
 }

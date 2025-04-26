@@ -1,9 +1,9 @@
 using System.Net;
 
 namespace Inkloom.Api.Services;
-public class UserService(IMapper mapper, DataContext context, IAuthService authService) : IUserService
+public class UserService(IMapper mapper, DataContext context, IAuthService authService, IConfiguration configuration) : IUserService
 {
-
+    private readonly IConfiguration _configuration = configuration;
     private readonly IMapper _mapper = mapper;
 
     private readonly DataContext _context = context;

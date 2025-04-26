@@ -11,7 +11,7 @@ public partial class UserServiceTests
     [InlineData("@user")]
     [InlineData("user_name")]
 
-    public async void GetNonExistingUserReturnsNotFound(string username)
+    public async Task GetNonExistingUserReturnsNotFound(string username)
     {
         var serviceResponse = await userService.GetUser(username);
 
@@ -20,7 +20,7 @@ public partial class UserServiceTests
     }
 
     [Fact]
-    public async void GetValidUserReturnsUserResponse()
+    public async Task GetValidUserReturnsUserResponse()
     {
         var serviceResponse = await userService.GetUser(testUser.Username);
 

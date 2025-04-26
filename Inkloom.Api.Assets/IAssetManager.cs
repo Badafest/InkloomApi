@@ -2,10 +2,10 @@
 
 public interface IAssetManager
 {
-    public Asset GetAsset(string path, bool stream = true);
-    public AssetRecord GetAssetRecord(string path);
+    public Asset GetAsset(string id, bool stream = true);
+    public AssetRecord GetAssetRecord(string id);
     public string AddAsset(string path, Asset asset);
-    public void RemoveAsset(string path);
-    public AssetRecord UpdateAssetRecord(string path, AssetRecord record);
+    public void RemoveAsset(string id);
+    public AssetRecord UpdateAssetRecord(string id, AssetRecord record);
 }
 

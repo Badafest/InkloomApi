@@ -12,11 +12,11 @@ public class DatabaseFixture : IDisposable
 
         AddSeedData(SeedData.Users);
     }
-    public async void AddSeedData<T>(IEnumerable<T> data) where T : class
+    public void AddSeedData<T>(IEnumerable<T> data) where T : class
     {
-        await Context.Database.EnsureCreatedAsync();
-        await Context.AddRangeAsync(data);
-        await Context.SaveChangesAsync();
+        Context.Database.EnsureCreated();
+        Context.AddRange(data);
+        Context.SaveChanges();
     }
 
     public void Dispose()

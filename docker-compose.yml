@@ -29,7 +29,7 @@ services:
       - inkloom_network
 
     volumes:
-      - ./assets:/assets
+      - ./assets:/inkloom/assets
 
 networks:
   inkloom_network:

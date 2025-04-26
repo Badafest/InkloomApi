@@ -22,7 +22,7 @@ public partial class AuthServiceTests
     [InlineData("@user")]
     [InlineData("user_name")]
 
-    public async void RegisterBadUsernameThrowsArgumentException(string username)
+    public async Task RegisterBadUsernameThrowsArgumentException(string username)
     {
         var userData = new RegisterRequest()
         {
@@ -39,7 +39,7 @@ public partial class AuthServiceTests
     [InlineData("@user.com")]
     [InlineData("testuser.com")]
 
-    public async void RegisterBadEmailThrowsArgumentException(string email)
+    public async Task RegisterBadEmailThrowsArgumentException(string email)
     {
         var userData = new RegisterRequest()
         {
@@ -55,7 +55,7 @@ public partial class AuthServiceTests
     [InlineData("password")]
     [InlineData("P!2A")]
 
-    public async void RegisterBadPasswordThrowsArgumentException(string password)
+    public async Task RegisterBadPasswordThrowsArgumentException(string password)
     {
         var userData = new RegisterRequest()
         {
@@ -68,7 +68,7 @@ public partial class AuthServiceTests
 
 
     [Fact]
-    public async void RegisterValidUserReturnsUserResponse()
+    public async Task RegisterValidUserReturnsUserResponse()
     {
         var userData = new RegisterRequest()
         {
@@ -85,7 +85,7 @@ public partial class AuthServiceTests
     }
 
     [Fact]
-    public async void RegisterExistingUsernameReturnsBadRequest()
+    public async Task RegisterExistingUsernameReturnsBadRequest()
     {
         var userData = new RegisterRequest()
         {
@@ -101,7 +101,7 @@ public partial class AuthServiceTests
 
 
     [Fact]
-    public async void RegisterExistingEmailReturnsBadRequest()
+    public async Task RegisterExistingEmailReturnsBadRequest()
     {
         var userData = new RegisterRequest()
         {

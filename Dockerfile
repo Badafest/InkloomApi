@@ -1,5 +1,5 @@
 # Use the official .NET 8 SDK as a build image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 # Set the working directory
 WORKDIR /src
@@ -14,7 +14,7 @@ RUN dotnet restore
 RUN dotnet publish -c Release -o ./Publish
 
 # Use the official .NET 8 runtime as a base image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 
 # Copy the publish directory from the build stage
 COPY --from=build /src/Publish /app

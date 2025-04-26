@@ -5,7 +5,7 @@ public partial class UserServiceTests
 
     [Fact]
 
-    public async void CheckExistingUsernameReturnsFalse()
+    public async Task CheckExistingUsernameReturnsFalse()
     {
         var serviceResponse = await userService.CheckUsername(testUser.Username);
 
@@ -13,7 +13,7 @@ public partial class UserServiceTests
     }
 
     [Fact]
-    public async void CheckNonExistingUsernameReturnsTrue()
+    public async Task CheckNonExistingUsernameReturnsTrue()
     {
         var serviceResponse = await userService.CheckUsername(testUser.Username + "1423");
 

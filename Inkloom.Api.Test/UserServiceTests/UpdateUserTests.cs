@@ -4,7 +4,7 @@ public partial class UserServiceTests
 {
 
     [Fact]
-    public async void UpdateAboutAndAvatarReturnsUserResponse()
+    public async Task UpdateAboutAndAvatarReturnsUserResponse()
     {
         var about = "I am a handsome user";
         var avatar = "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_square.jpg";

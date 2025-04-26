@@ -6,7 +6,7 @@ namespace Inkloom.Api.Test;
 public partial class AuthServiceTests
 {
     [Fact]
-    public async void RefreshValidTokensReturnsNewTokens()
+    public async Task RefreshValidTokensReturnsNewTokens()
     {
         var loginResponse = await authService.Login(new()
         {
@@ -35,7 +35,7 @@ public partial class AuthServiceTests
     }
 
     [Fact]
-    public async void RefreshInvalidTokensThrowsSecurityTokenException()
+    public async Task RefreshInvalidTokensThrowsSecurityTokenException()
     {
         var refreshTask = authService.Refresh(new()
         {
@@ -47,7 +47,7 @@ public partial class AuthServiceTests
     }
 
     [Fact]
-    public async void RefreshExpiredTokenThrowsSecurityTokenException()
+    public async Task RefreshExpiredTokenThrowsSecurityTokenException()
     {
         var refreshTask = authService.Refresh(new()
         {

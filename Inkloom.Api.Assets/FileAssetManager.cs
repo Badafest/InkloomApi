@@ -14,7 +14,11 @@ public class FileAssetManager(IAssetRecordManager recordManager, FileAssetManage
         var location = _options.GroupByAssetType ? Path.Combine(_options.BaseDirectory, asset.Record.Type.ToString()) : _options.BaseDirectory;
         var fullPath = Path.Combine(location, path);
 
-        asset.Record.Id = fullPath;
+        string directoryPath = Path.GetDirectoryName(fullPath)!;
+
+        Directory.CreateDirectory(directoryPath);
+
+        asset.Record.FilePath = fullPath;
 
         if (asset.Stream != null)
         {
@@ -31,16 +35,15 @@ public class FileAssetManager(IAssetRecordManager recordManager, FileAssetManage
         }
 
         asset.Record.Size = asset.Stream != null ? asset.Stream.Length : asset.Bytes.Length;
-        _recordManager.AddRecord(asset.Record);
-        return asset.Record.Id;
+        return _recordManager.AddRecord(asset.Record);
     }
 
-    public static byte[] ReadAsBytes(string path)
+    private static byte[] ReadAsBytes(string path)
     {
         return File.ReadAllBytes(path);
     }
 
-    public static Stream ReadAsStream(string path)
+    private static FileStream ReadAsStream(string path)
     {
         return File.OpenRead(path);
     }
@@ -50,31 +53,37 @@ public class FileAssetManager(IAssetRecordManager recordManager, FileAssetManage
         return _recordManager.ReadRecord(path);
     }
 
-    public Asset GetAsset(string path, bool stream = true)
+    public Asset GetAsset(string id, bool stream = true)
     {
         Asset asset = new()
         {
-            Record = GetAssetRecord(path)
+            Record = GetAssetRecord(id)
         };
+
+        if (!Directory.Exists(asset.Record.FilePath))
+        {
+            return asset;
+        }
         if (stream)
         {
-            asset.Stream = ReadAsStream(asset.Record.Id);
+            asset.Stream = ReadAsStream(asset.Record.FilePath);
         }
         else
         {
-            asset.Bytes = ReadAsBytes(asset.Record.Id);
+            asset.Bytes = ReadAsBytes(asset.Record.FilePath);
         }
         return asset;
     }
 
-    public void RemoveAsset(string path)
+    public void RemoveAsset(string id)
     {
-        File.Delete(path);
-        _recordManager.RemoveRecord(path);
+        var record = _recordManager.ReadRecord(id);
+        File.Delete(record.FilePath);
+        _recordManager.RemoveRecord(record.Id);
     }
 
-    public AssetRecord UpdateAssetRecord(string path, AssetRecord record)
+    public AssetRecord UpdateAssetRecord(string id, AssetRecord record)
     {
-        return _recordManager.UpdateRecord(path, record);
+        return _recordManager.UpdateRecord(id, record);
     }
 }

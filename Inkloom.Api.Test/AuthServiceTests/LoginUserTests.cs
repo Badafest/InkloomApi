@@ -10,7 +10,7 @@ public partial class AuthServiceTests
     [InlineData("user@mail.com")]
     [InlineData("test154")]
 
-    public async void LoginInvalidEmailReturnsBadRequest(string email)
+    public async Task LoginInvalidEmailReturnsBadRequest(string email)
     {
         var userData = new LoginRequest()
         {
@@ -29,7 +29,7 @@ public partial class AuthServiceTests
     [InlineData("WeakPassword")]
     [InlineData("str0ngpassword")]
 
-    public async void LoginInvalidPasswordReturnsBadRequest(string password)
+    public async Task LoginInvalidPasswordReturnsBadRequest(string password)
     {
         var userData = new LoginRequest()
         {
@@ -44,7 +44,7 @@ public partial class AuthServiceTests
 
 
     [Fact]
-    public async void LoginValidUserReturnsLoginResponse()
+    public async Task LoginValidUserReturnsLoginResponse()
     {
         var userData = new LoginRequest()
         {

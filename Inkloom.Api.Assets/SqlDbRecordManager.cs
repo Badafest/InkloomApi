@@ -76,7 +76,7 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         using var connection = GetDbConnection();
         connection.Open();
 
-        var query = $"INSERT INTO \"{_tableName}\" (\"Id\", \"FilePath\", \"Name\", \"Author\", \"Type\", \"Mimetype\", \"Size\", \"Metadata\") VALUES (@Id, @FilePath, @Name, @Author, @Type, @MimeType @Size, @Metadata)";
+        var query = $"INSERT INTO \"{_tableName}\" (\"Id\", \"FilePath\", \"Name\", \"Author\", \"Type\", \"Mimetype\", \"Size\", \"Metadata\") VALUES (@Id, @FilePath, @Name, @Author, @Type, @MimeType, @Size, @Metadata)";
 
         using var command = connection.CreateCommand();
         command.CommandType = CommandType.Text;
@@ -88,6 +88,7 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         AddDbParameter(command, "@Author", record.Author);
         AddDbParameter(command, "@Type", record.Type.ToString());
         AddDbParameter(command, "@Mimetype", record.Mimetype);
+        AddDbParameter(command, "@Size", record.Size);
         AddDbParameter(command, "@Metadata", record.Metadata);
 
         command.ExecuteNonQuery();
@@ -95,7 +96,7 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         return record.Id;
     }
 
-    public void RemoveRecord(string filePath)
+    public void RemoveRecord(string recordId)
     {
         using var connection = GetDbConnection();
         connection.Open();
@@ -106,28 +107,28 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         command.CommandType = CommandType.Text;
         command.CommandText = query;
 
-        AddDbParameter(command, "@Id", HashMD5(filePath));
+        AddDbParameter(command, "@Id", recordId);
         command.ExecuteNonQuery();
     }
 
-    public AssetRecord ReadRecord(string filePath)
+    public AssetRecord ReadRecord(string recordId)
     {
         using var connection = GetDbConnection();
         connection.Open();
 
-        var query = $"SELECT Data FROM \"{_tableName}\" WHERE \"Id\" = @Id";
+        var query = $"SELECT * FROM \"{_tableName}\" WHERE \"Id\" = @Id";
 
         using var command = connection.CreateCommand();
         command.CommandType = CommandType.Text;
         command.CommandText = query;
 
-        AddDbParameter(command, "@Id", HashMD5(filePath));
+        AddDbParameter(command, "@Id", recordId);
 
         using var reader = command.ExecuteReader();
 
         if (!reader.Read())
         {
-            throw new KeyNotFoundException($"Record with file path '{filePath}' not found.");
+            throw new KeyNotFoundException($"Record with id '{recordId}' not found.");
         }
 
         return new AssetRecord
@@ -143,7 +144,7 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         };
     }
 
-    public AssetRecord UpdateRecord(string filePath, AssetRecord asset)
+    public AssetRecord UpdateRecord(string recordId, AssetRecord record)
     {
         using var connection = GetDbConnection();
         connection.Open();
@@ -154,23 +155,21 @@ public class SqlDbRecordManager(SqlDbRecordManagerOptions options) : IAssetRecor
         command.CommandType = CommandType.Text;
         command.CommandText = query;
 
-        var assetId = HashMD5(filePath);
-
-        AddDbParameter(command, "@Id", assetId);
-        AddDbParameter(command, "@Name", asset.Name);
-        AddDbParameter(command, "@Author", asset.Author);
-        AddDbParameter(command, "@Type", asset.Type.ToString());
-        AddDbParameter(command, "@Mimetype", asset.Mimetype);
-        AddDbParameter(command, "@Metadata", asset.Metadata);
+        AddDbParameter(command, "@Id", recordId);
+        AddDbParameter(command, "@Name", record.Name);
+        AddDbParameter(command, "@Author", record.Author);
+        AddDbParameter(command, "@Type", record.Type.ToString());
+        AddDbParameter(command, "@Mimetype", record.Mimetype);
+        AddDbParameter(command, "@Metadata", record.Metadata);
 
         var rowsAffected = command.ExecuteNonQuery();
 
         if (rowsAffected == 0)
         {
-            throw new KeyNotFoundException($"Record with file path '{filePath}' not found.");
+            throw new KeyNotFoundException($"Record with id '{recordId}' not found.");
         }
 
-        asset.Id = assetId;
-        return asset;
+        record.Id = recordId;
+        return record;
     }
 }

@@ -26,12 +26,12 @@ builder.Services.AddDbContext<DataContext>(options =>
   }
 }).AddSqlDbRecordManager(new()
 {
-  DbProviderFactory = NpgsqlFactory.Instance, // use Npgsql as db factory,
+  DbProviderFactory = NpgsqlFactory.Instance, // use Npgsql as db factory
   ConnectionString = dbConnectionString
 }).AddFileAssetManager(new()
 {
   BaseDirectory = builder.Configuration["AssetsBaseDirectory"] ?? "",
-  GroupByAssetType = true
+  GroupByAssetType = false // only images are allowed to be uploaded
 });
 
 // Run database migration
@@ -140,6 +140,8 @@ app.UseExceptionMiddleware();
 app.UseAuthentication();
 
 app.UseTokenBlacklistMiddleware();
+
+app.UseFileHandlingMiddleware();
 
 app.UseAuthorization();
 
