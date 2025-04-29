@@ -3,26 +3,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inkloom.Api.Test;
 
-public class DatabaseFixture : IDisposable
+public class DatabaseFixture : IAsyncLifetime
 {
     public DataContext Context { get; set; } = null!;
     public DatabaseFixture()
     {
-        Context = new DataContext(new DbContextOptionsBuilder<DataContext>().UseNpgsql(Startup.config["PgConnectionString"]).Options);
+        var connectionString = Startup.config["PgConnectionString"]!;
+        Context = new DataContext(new DbContextOptionsBuilder<DataContext>().UseNpgsql(connectionString).Options);
 
-        AddSeedData(SeedData.Users);
     }
-    public void AddSeedData<T>(IEnumerable<T> data) where T : class
+    public async ValueTask InitializeAsync()
     {
-        Context.Database.EnsureCreated();
-        Context.AddRange(data);
-        Context.SaveChanges();
+        await Context.Database.EnsureCreatedAsync();
+        Startup.assetRecordManager.EnsureTableExists();
+        await AddSeedData(SeedData.Users);
     }
 
-    public void Dispose()
+
+    public async Task AddSeedData<T>(IEnumerable<T> data) where T : class
     {
-        Context.Database.EnsureDeleted();
-        GC.SuppressFinalize(this);
+        await Context.AddRangeAsync(data);
+        await Context.SaveChangesAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Context.Database.EnsureDeletedAsync();
     }
 }
 
