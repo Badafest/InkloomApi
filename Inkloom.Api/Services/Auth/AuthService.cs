@@ -23,6 +23,7 @@ public partial class AuthService(IConfiguration config, DataContext context, IMa
         var newUser = new User
         {
             Username = userData.Type == AuthType.PASSWORD ? userData.Username : "user0000",
+            DisplayName = userData.DisplayName,
             Password = userData.Type == AuthType.PASSWORD ? userData.Password : "",
             Email = userData.Type == AuthType.PASSWORD ? userData.Email : "user@inkloom.local",
             TokenBlacklistTimestamp = DateTime.UtcNow,
@@ -43,6 +44,7 @@ public partial class AuthService(IConfiguration config, DataContext context, IMa
             newUser.FacebookId = payload.FacebookId;
             newUser.Email = payload.Email;
             newUser.Username = payload.Username;
+            newUser.DisplayName = payload.DisplayName;
             newUser.EmailVerified = payload.EmailVerified;
             newUser.ProfileComplete = !MissingUsernameRegex().IsMatch(payload.Username) && !payload.Email.EndsWith(".local");
             newUser.AuthTypes = [userData.Type];
@@ -298,6 +300,7 @@ public partial class AuthService(IConfiguration config, DataContext context, IMa
             user.Avatar ??= payload.Avatar;
             user.FacebookId ??= payload.FacebookId;
             user.Email ??= payload.Email;
+            user.DisplayName ??= payload.DisplayName;
             user.EmailVerified = user.EmailVerified || payload.EmailVerified;
             user.ProfileComplete = !MissingUsernameRegex().IsMatch(user.Username) && !user.Email.EndsWith(".local");
             user.AuthTypes = [.. user.AuthTypes, authType];
@@ -310,6 +313,7 @@ public partial class AuthService(IConfiguration config, DataContext context, IMa
             Avatar = payload.Avatar,
             FacebookId = payload.FacebookId,
             Email = payload.Email,
+            DisplayName = payload.DisplayName,
             EmailVerified = payload.EmailVerified,
             ProfileComplete = !MissingUsernameRegex().IsMatch(payload.Username) && !payload.Email.EndsWith(".local"),
             Username = payload.Username,

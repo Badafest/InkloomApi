@@ -63,9 +63,9 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
         .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
         .Where(blog => searchData.SearchText == null ||
-            blog.Title.ToLower().Contains(searchData.SearchText.ToLower()) ||
+            blog.Title.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase) ||
             blog.Description == null ||
-            blog.Description.ToLower().Contains(searchData.SearchText.ToLower()))
+            blog.Description.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase))
         .Include(blog => blog.Tags)
         .Where(blog => searchData.Tags == null ||
             searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToUpper())))

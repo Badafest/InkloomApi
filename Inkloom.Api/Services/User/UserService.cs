@@ -55,8 +55,10 @@ public class UserService(IMapper mapper, DataContext context, IAuthService authS
             _assetManager.RemoveAsset(assetId);
         }
 
-        user.About = updateData.About ?? user.About;
-        user.Avatar = updateData.Avatar ?? user.Avatar;
+        user.About = updateData.About;
+        user.Avatar = updateData.Avatar;
+        user.DisplayName = updateData.DisplayName ?? "";
+
         await _context.SoftSaveChangesAsync();
         return new() { Data = _mapper.Map<UserResponse>(user) };
     }

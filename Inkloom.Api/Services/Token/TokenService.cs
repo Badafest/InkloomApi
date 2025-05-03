@@ -99,11 +99,12 @@ public partial class TokenService(IConfiguration config, ILogger<TokenService> l
             {
                 throw new Exception();
             }
-
+            var name = payload["name"]?.GetValue<string>() ?? "";
             return new()
             {
                 Email = email,
-                Username = DefaultUsername(payload["name"]?.GetValue<string>() ?? ""),
+                Username = DefaultUsername(name),
+                DisplayName = name,
                 Avatar = payload["picture"]?.GetValue<string>(),
                 EmailVerified = true
             };
@@ -123,10 +124,12 @@ public partial class TokenService(IConfiguration config, ILogger<TokenService> l
             var response = await httpClient.GetStringAsync($"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={token}") ?? throw new Exception();
             var payload = JsonNode.Parse(response) ?? throw new Exception();
             var facebookId = payload["id"]?.GetValue<string>() ?? throw new Exception();
+            var name = payload["name"]?.GetValue<string>() ?? "";
             return new()
             {
                 Email = payload["email"]?.GetValue<string>() ?? $"{facebookId}@facebook.local",
-                Username = DefaultUsername(payload["name"]?.GetValue<string>() ?? ""),
+                Username = DefaultUsername(name),
+                DisplayName = name,
                 Avatar = payload["picture"]?["data"]?["url"]?.GetValue<string>(),
                 FacebookId = facebookId,
             };

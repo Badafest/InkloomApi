@@ -62,7 +62,7 @@ public partial class User : ModelBase
             ValidUsername = value;
         }
     }
-
+    public string DisplayName { get; set; } = "";
     public string PasswordHash { get; set; } = "";
     [NotMapped]
     public string Password
@@ -122,4 +122,6 @@ public partial class User : ModelBase
         }
         return false;
     }
+    public List<UserFollower> Followers { get; set; } = [];
+    public List<UserFollower> Followings { get; set; } = [];
 }
