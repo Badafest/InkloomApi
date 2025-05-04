@@ -161,14 +161,14 @@ public partial class AuthService(IConfiguration config, DataContext context, IMa
 
         await _context.SaveChangesAsync();
 
-        var template = new OTPTemplate(user.Username, newOTP, new Dictionary<TokenType, string>(){
+        var template = new OTPTemplate(user.DisplayName, newOTP, new Dictionary<TokenType, string>(){
             {TokenType.EmailVerification, "Email Verification"},
             {TokenType.PasswordReset, "Password Reset"},
         }.GetValueOrDefault(tokenType), _config["WebBaseUrl"]);
 
         await _emailService.SendEmail(new()
         {
-            To = new(user.Username, email),
+            To = new(user.DisplayName, email),
             TextBody = template.GetTextBody(),
             HtmlBody = await template.GetHtmlBody(),
             Subject = new Dictionary<TokenType, string>(){
@@ -236,10 +236,10 @@ public partial class AuthService(IConfiguration config, DataContext context, IMa
         }
         await _context.SaveChangesAsync();
 
-        var template = new MagicLoginTemplate(user.Username, _config["WebBaseUrl"], magicToken);
+        var template = new MagicLoginTemplate(user.DisplayName, _config["WebBaseUrl"], magicToken);
         await _emailService.SendEmail(new()
         {
-            To = new(user.Username, email),
+            To = new(user.DisplayName, email),
             TextBody = template.GetTextBody(),
             HtmlBody = await template.GetHtmlBody(),
             Subject = "Login to Inkloom"

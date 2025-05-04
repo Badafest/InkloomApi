@@ -15,7 +15,7 @@ public partial class TokenService(IConfiguration config, ILogger<TokenService> l
     private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
     private readonly string OTPValidCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    public string GenerateOTP(short length = 8, string? validCharacters = null)
+    public string GenerateOTP(short length = 6, string? validCharacters = null)
     {
         var randomBytes = new byte[length];
         _rng.GetNonZeroBytes(randomBytes);

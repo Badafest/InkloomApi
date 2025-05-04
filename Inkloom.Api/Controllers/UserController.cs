@@ -1,3 +1,4 @@
+using System.Net;
 using Inkloom.Api.Assets;
 using Microsoft.AspNetCore.Authorization;
 
@@ -53,12 +54,14 @@ public class UserController(IUserService userService, IAuthService authService, 
     }
 
     [HttpPost("Verify-Email")]
-    [AllowAnonymous]
     public async Task<ActionResult<ServiceResponse<UserResponse?>>> VerifyEmail(VerifyEmailRequest updateData)
     {
-        var serviceResponse = updateData?.Token != null ?
-            await _userService.VerifyEmail(updateData) :
-            await _authService.GenerateAndSendOTP(updateData?.Email ?? "", TokenType.EmailVerification);
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+        var token = updateData?.Token;
+
+        var serviceResponse = token != null ?
+            await _userService.VerifyEmail(token, email) :
+            await _authService.GenerateAndSendOTP(email, TokenType.EmailVerification);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
