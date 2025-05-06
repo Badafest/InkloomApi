@@ -30,7 +30,13 @@ public class UserService(IMapper mapper, DataContext context, IAuthService authS
 
     public async Task<ServiceResponse<UserResponse>> GetUser(string username)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
+        var user = await _context.Users
+                        .Where(user => user.Username == username)
+                        .Include(user => user.Followers)
+                        .Include(user => user.Followings)
+                        .Include(user => user.Blogs)
+                        .FirstOrDefaultAsync();
+
         if (user == null || user.Username != username)
         {
             return new(HttpStatusCode.NotFound) { Message = "User not Found" };

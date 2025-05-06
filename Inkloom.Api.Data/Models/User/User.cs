@@ -122,6 +122,7 @@ public partial class User : ModelBase
         }
         return false;
     }
+    public List<Blog> Blogs { get; set; } = [];
     public List<UserFollower> Followers { get; set; } = [];
     public List<UserFollower> Followings { get; set; } = [];
 }

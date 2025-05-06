@@ -35,6 +35,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         builder.Entity<Tag>().HasMany(t => t.Blogs).WithMany(b => b.Tags).UsingEntity<BlogTag>();
         builder.Entity<BlogTag>().HasQueryFilter(bt => bt.Blog.DeletedDate <= DateTime.MinValue);
 
+        builder.Entity<User>().HasMany(u => u.Blogs).WithOne(b => b.Author).HasForeignKey(b => b.AuthorId);
+
         builder.Entity<UserFollower>().HasKey(uf => new { uf.FollowerId, uf.FollowingId });
         builder.Entity<UserFollower>().HasQueryFilter(uf => uf.Follower.DeletedDate <= DateTime.MinValue);
         builder.Entity<UserFollower>().HasQueryFilter(uf => uf.Following.DeletedDate <= DateTime.MinValue);
