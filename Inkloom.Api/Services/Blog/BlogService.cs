@@ -63,12 +63,12 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
         .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
         .Where(blog => searchData.SearchText == null ||
-            blog.Title.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase) ||
+            blog.Title.Contains(searchData.SearchText) ||
             blog.Description == null ||
-            blog.Description.Contains(searchData.SearchText, StringComparison.CurrentCultureIgnoreCase))
+            blog.Description.Contains(searchData.SearchText))
         .Include(blog => blog.Tags)
         .Where(blog => searchData.Tags == null ||
-            searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToUpper())))
+            searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToLower())))
         .Skip((searchData.Page - 1) * 100)
         .Take(100)
         .Select(blog => _mapper.Map<BlogResponse>(blog))
@@ -104,16 +104,16 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
 
     private async Task HandleBlogTags(Blog blog, IEnumerable<Tag> updatedTags)
     {
-        var oldTagNames = blog.Tags.Select(tag => tag.Name.ToUpper());
+        var oldTagNames = blog.Tags.Select(tag => tag.Name.ToLower());
         blog.Tags.RemoveAll(tag => true);
         await _context.SaveChangesAsync();
 
-        var updatedTagNames = updatedTags.Select(tag => tag.Name.ToUpper());
+        var updatedTagNames = updatedTags.Select(tag => tag.Name.ToLower());
 
-        var foundTags = await _context.Tags.Where(tag => updatedTagNames.Contains(tag.Name.ToUpper())).ToArrayAsync();
+        var foundTags = await _context.Tags.Where(tag => updatedTagNames.Contains(tag.Name.ToLower())).ToArrayAsync();
         blog.Tags.AddRange(foundTags);
 
-        var foundTagNames = foundTags.Select(tag => tag.Name.ToUpper());
+        var foundTagNames = foundTags.Select(tag => tag.Name.ToLower());
 
         var newTags = updatedTags.Where(tag => !foundTagNames.Contains(tag.Name));
         blog.Tags.AddRange(newTags);

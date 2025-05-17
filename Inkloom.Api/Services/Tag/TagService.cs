@@ -10,10 +10,14 @@ public partial class TagService(DataContext context) : ITagService
     {
         if (InvalidSearchRegex().IsMatch(searchText))
         {
-            throw new ArgumentException("Tag names contain letters only");
+            throw new ArgumentException("Tag names contain letters and dashes only");
+        }
+        if (searchText.Length < 2)
+        {
+            throw new ArgumentException("Too short search string");
         }
         var tags = await _context.Tags
-            .Where(tag => tag.Name.Contains(searchText, StringComparison.CurrentCultureIgnoreCase))
+            .Where(tag => tag.Name.Contains(searchText.ToLower()))
             .Include(tag => tag.BlogTags)
             .OrderByDescending(tag => tag.BlogTags.Count)
             .Take(100)
@@ -23,6 +27,6 @@ public partial class TagService(DataContext context) : ITagService
         return new() { Data = tags };
     }
 
-    [GeneratedRegex("[^a-zA-Z]")]
+    [GeneratedRegex("[^a-zA-Z-]")]
     private static partial Regex InvalidSearchRegex();
 }

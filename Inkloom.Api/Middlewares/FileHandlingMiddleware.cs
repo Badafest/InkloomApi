@@ -8,7 +8,7 @@ public class FileHandlingMiddleware(RequestDelegate next)
     private readonly long _maxFileSize = 2 * 1024 * 1024; // 2MB
     private readonly Dictionary<AssetType, string[]> _allowedMimeTypes = new()
     {
-        {AssetType.Image, ["image/jpg", "image/png", "image/svg+xml", "image/webp", "image/svg", "image/jpeg"]},
+        {AssetType.Image, ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"]},
         // {AssetType.Audio, ["audio/mpeg", "audio/webm"]},
         // {AssetType.Video, ["video/mp4", "video/webm"]},
         // {AssetType.Document, ["application/pdf", "text/plain"]},

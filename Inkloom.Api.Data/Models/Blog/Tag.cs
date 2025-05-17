@@ -18,13 +18,13 @@ public partial class Tag
         {
             if (!TagNameRegex().IsMatch(value))
             {
-                throw new ArgumentException("Tag name should be at least 3 characters long and should contain uppercase letters only");
+                throw new ArgumentException("Tag name should be in the format of 'tag-name'");
             }
             ValidName = value;
         }
     }
 
-    [GeneratedRegex("^[A-Z]{3,}$")]
+    [GeneratedRegex("^[a-z]+(-[a-z]+)*$")]
     private static partial Regex TagNameRegex();
 
     public List<BlogTag> BlogTags { get; set; } = [];
