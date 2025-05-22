@@ -1,7 +1,9 @@
 using System.Net;
 using Inkloom.Api.Assets;
+using Inkloom.Api.Extensions;
 
 namespace Inkloom.Api.Services;
+
 public class UserService(IMapper mapper, DataContext context, IAuthService authService, IConfiguration configuration, IAssetManager assetManager) : IUserService
 {
     private readonly IConfiguration _configuration = configuration;
@@ -52,14 +54,7 @@ public class UserService(IMapper mapper, DataContext context, IAuthService authS
             return new(HttpStatusCode.NotFound) { Message = "User not Found" };
         }
 
-        // check if the old avatar is served by inkloom and the new one is different from it
-        // in that case delete the old avatar as it is no longer used
-        var isInkloomAvatar = user.Avatar?.StartsWith(_configuration["ApiBaseUrl"]!) ?? false;
-        if (!string.IsNullOrEmpty(updateData.Avatar) && user.Avatar != updateData.Avatar && isInkloomAvatar)
-        {
-            var assetId = user.Avatar!.Split("/")[^1].Split(".")[0];
-            _assetManager.RemoveAsset(assetId);
-        }
+        _assetManager.DeleteOldFile(_configuration["ApiBaseUrl"]!, user.Avatar ?? "", updateData.Avatar ?? "");
 
         user.About = updateData.About;
         user.Avatar = updateData.Avatar;

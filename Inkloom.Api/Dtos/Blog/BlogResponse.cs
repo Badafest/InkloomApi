@@ -3,6 +3,7 @@ namespace Inkloom.Api.Dtos;
 public class AuthorResponse
 {
     public string Username { get; set; } = "";
+    public string DisplayName { get; set; } = "";
     public string? Avatar { get; set; } = "";
     public string? About { get; set; } = "";
 }
@@ -14,16 +15,16 @@ public class BlogPreviewResponse
 
     public string Title { get; set; } = "Untitled Blog";
 
-    public string? Description { get; set; }
+    public string? Subtitle { get; set; }
 
     public string? HeaderImage { get; set; }
     public IEnumerable<string> Tags { get; set; } = [];
+    public DateTime PubllishedDate { get; set; } = DateTime.MinValue;
 }
 
 public class BlogResponse : BlogPreviewResponse
 {
     public bool Public { get; set; } = true;
     public BlogStatus Status { get; set; } = BlogStatus.DRAFT;
-
-    public string? Content { get; set; }
+    public IEnumerable<ContentBlock> Content { get; set; } = [];
 }

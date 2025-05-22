@@ -1,12 +1,15 @@
 
 using System.Net;
+using Inkloom.Api.Assets;
+using Inkloom.Api.Extensions;
 
 namespace Inkloom.Api.Services;
 
-public class BlogService(DataContext context, IMapper mapper) : IBlogService
+public class BlogService(DataContext context, IMapper mapper, IConfiguration configuration, IAssetManager assetManager) : IBlogService
 {
     private readonly DataContext _context = context;
-
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IAssetManager _assetManager = assetManager;
     private readonly IMapper _mapper = mapper;
     public async Task<ServiceResponse<BlogResponse>> CreateBlog(BlogRequest newBlog, string authorUsername)
     {
@@ -64,8 +67,8 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
         .Where(blog => searchData.SearchText == null ||
             blog.Title.Contains(searchData.SearchText) ||
-            blog.Description == null ||
-            blog.Description.Contains(searchData.SearchText))
+            blog.Subtitle == null ||
+            blog.Subtitle.Contains(searchData.SearchText))
         .Include(blog => blog.Tags)
         .Where(blog => searchData.Tags == null ||
             searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToLower())))
@@ -86,12 +89,24 @@ public class BlogService(DataContext context, IMapper mapper) : IBlogService
         }
         var updateBlog = _mapper.Map<Blog>(updateData);
 
-        blog.Public = updateData.Public ?? blog.Public;
-        blog.Status = updateData.Status ?? blog.Status;
-        blog.Title = updateBlog.Title ?? blog.Title;
-        blog.Description = updateBlog.Description ?? blog.Description;
-        blog.HeaderImage = updateBlog.HeaderImage ?? blog.HeaderImage;
-        blog.Content = updateBlog.Content ?? blog.Content;
+        // delete old images
+        _assetManager.DeleteOldFile(_configuration["ApiBaseUrl"]!, blog.HeaderImage ?? "", updateData.HeaderImage ?? "");
+        foreach (var block in BlogHelper.ParseBlogContent(blog.Content ?? "[]").Where(block => block.Type == ContentBlockType.image))
+        {
+            _assetManager.DeleteOldFile(_configuration["ApiBaseUrl"]!, block.Content ?? "");
+        }
+
+        if (blog.Status != BlogStatus.PUBLISHED && updateBlog.Status == BlogStatus.PUBLISHED)
+        {
+            blog.PubllishedDate = DateTime.Now;
+        }
+
+        blog.Public = updateData.Public ?? false;
+        blog.Status = updateData.Status ?? BlogStatus.DRAFT;
+        blog.Title = updateBlog.Title;
+        blog.Subtitle = updateBlog.Subtitle;
+        blog.HeaderImage = updateBlog.HeaderImage;
+        blog.Content = updateBlog.Content;
 
         if (updateData.Tags != null)
         {

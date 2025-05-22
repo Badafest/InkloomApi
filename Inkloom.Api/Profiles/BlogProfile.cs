@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Inkloom.Api.Profiles;
 
 public class BlogTagsResolver : IValueResolver<Blog, BlogPreviewResponse, IEnumerable<string>>
@@ -13,7 +15,7 @@ public class BlogRequestTagsResolver : IValueResolver<BlogRequest, Blog, List<Ta
 {
     public List<Tag> Resolve(BlogRequest source, Blog destination, List<Tag> destinatinoMember, ResolutionContext context)
     {
-        return source.Tags?.Select(tag => new Tag() { Name = tag.ToUpper() })?.ToList() ?? [];
+        return source.Tags?.Select(tag => new Tag() { Name = tag.ToLower() })?.ToList() ?? [];
     }
 }
 
@@ -25,6 +27,36 @@ public class BlogAuthorResolver : IValueResolver<Blog, BlogPreviewResponse, Auth
         return new() { Username = source.Author.Username, About = source.Author.About, Avatar = source.Author.Avatar };
     }
 }
+
+public class BlogContentResolver : IValueResolver<Blog, BlogResponse, IEnumerable<ContentBlock>>
+{
+    public IEnumerable<ContentBlock> Resolve(Blog source, BlogResponse destination, IEnumerable<ContentBlock> destinatinoMember, ResolutionContext context)
+    {
+        if (string.IsNullOrWhiteSpace(source.Content?.Trim()))
+        {
+            return [];
+        }
+        return BlogHelper.ParseBlogContent(source.Content);
+    }
+}
+
+public class BlogRequestContentResolver : IValueResolver<BlogRequest, Blog, string?>
+{
+    public string? Resolve(BlogRequest source, Blog destination, string? destinatinoMember, ResolutionContext context)
+    {
+        var parsedContent = source.Content?.Select(block =>
+        {
+            var parsedBlock = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(block)!;
+            return new ContentBlock
+            {
+                Type = (ContentBlockType)Enum.Parse(typeof(ContentBlockType), parsedBlock["type"].ToString()),
+                Content = parsedBlock["content"].ToString(),
+                Metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(parsedBlock["metadata"].ToString())
+            };
+        });
+        return JsonSerializer.Serialize(parsedContent);
+    }
+}
 public class BlogProfile : Profile
 {
     public BlogProfile()
@@ -34,8 +66,10 @@ public class BlogProfile : Profile
             ForMember(dest => dest.Author, opt => opt.MapFrom(new BlogAuthorResolver()));
         CreateMap<Blog, BlogResponse>().
             ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogTagsResolver())).
-            ForMember(dest => dest.Author, opt => opt.MapFrom(new BlogAuthorResolver()));
+            ForMember(dest => dest.Author, opt => opt.MapFrom(new BlogAuthorResolver())).
+            ForMember(dest => dest.Content, opt => opt.MapFrom(new BlogContentResolver()));
         CreateMap<BlogRequest, Blog>().
-            ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogRequestTagsResolver()));
+            ForMember(dest => dest.Tags, opt => opt.MapFrom(new BlogRequestTagsResolver())).
+            ForMember(dest => dest.Content, opt => opt.MapFrom(new BlogRequestContentResolver()));
     }
 }
