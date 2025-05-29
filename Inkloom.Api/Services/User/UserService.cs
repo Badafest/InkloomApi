@@ -48,7 +48,12 @@ public class UserService(IMapper mapper, DataContext context, IAuthService authS
 
     public async Task<ServiceResponse<UserResponse>> UpdateUser(string username, UpdateUserRequest updateData)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(user => user.Username == username);
+        var user = await _context.Users
+                        .Include(user => user.Followers)
+                        .Include(user => user.Followings)
+                        .Include(user => user.Blogs)
+                        .FirstOrDefaultAsync(user => user.Username == username);
+
         if (user == null || user.Username != username)
         {
             return new(HttpStatusCode.NotFound) { Message = "User not Found" };

@@ -13,13 +13,13 @@ public class BlogPreviewResponse
     public int Id { get; set; }
     public AuthorResponse? Author { get; set; }
 
-    public string Title { get; set; } = "Untitled Blog";
+    public string Title { get; set; } = "";
 
     public string? Subtitle { get; set; }
 
     public string? HeaderImage { get; set; }
     public IEnumerable<string> Tags { get; set; } = [];
-    public DateTime PubllishedDate { get; set; } = DateTime.MinValue;
+    public DateTimeOffset PubllishedDate { get; set; }
 }
 
 public class BlogResponse : BlogPreviewResponse

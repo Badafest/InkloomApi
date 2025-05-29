@@ -24,7 +24,13 @@ public class BlogAuthorResolver : IValueResolver<Blog, BlogPreviewResponse, Auth
     public AuthorResponse? Resolve(Blog source, BlogPreviewResponse destination, AuthorResponse? destinatinoMember, ResolutionContext context)
     {
         if (source.Author == null) { return null; }
-        return new() { Username = source.Author.Username, About = source.Author.About, Avatar = source.Author.Avatar };
+        return new()
+        {
+            Username = source.Author.Username,
+            DisplayName = source.Author.DisplayName,
+            About = source.Author.About,
+            Avatar = source.Author.Avatar
+        };
     }
 }
 
@@ -44,17 +50,12 @@ public class BlogRequestContentResolver : IValueResolver<BlogRequest, Blog, stri
 {
     public string? Resolve(BlogRequest source, Blog destination, string? destinatinoMember, ResolutionContext context)
     {
-        var parsedContent = source.Content?.Select(block =>
+        var parsedBlocks = BlogHelper.ParseBlogContent(source.Content ?? []);
+        if (!parsedBlocks.Any())
         {
-            var parsedBlock = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(block)!;
-            return new ContentBlock
-            {
-                Type = (ContentBlockType)Enum.Parse(typeof(ContentBlockType), parsedBlock["type"].ToString()),
-                Content = parsedBlock["content"].ToString(),
-                Metadata = JsonSerializer.Deserialize<Dictionary<string, string>>(parsedBlock["metadata"].ToString())
-            };
-        });
-        return JsonSerializer.Serialize(parsedContent);
+            return null;
+        }
+        return JsonSerializer.Serialize(parsedBlocks);
     }
 }
 public class BlogProfile : Profile

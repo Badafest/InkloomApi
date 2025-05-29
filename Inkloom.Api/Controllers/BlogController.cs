@@ -10,7 +10,6 @@ namespace Inkloom.Api.Controllers;
 [Authorize("EmailVerified")]
 public class BlogController(IBlogService blogService, IAssetManager assetManager, IConfiguration configuration) : ControllerBase
 {
-
     private readonly IBlogService _blogService = blogService;
     private readonly IAssetManager _assetManager = assetManager;
     private readonly IConfiguration _configuration = configuration;
@@ -34,7 +33,7 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
     [HttpGet("{Id}")]
     public async Task<ActionResult<ServiceResponse<BlogResponse>>> GetBlogById(int Id)
     {
-        var serviceResponse = await _blogService.GetBlogById(Id);
+        var serviceResponse = await _blogService.GetBlogById(Id, HttpContext.User?.Identity?.Name ?? "");
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
@@ -64,14 +63,14 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
         {
             HandleBlogImages(updateData);
         }
-        var serviceResponse = await _blogService.UpdateBlog(Id, updateData);
+        var serviceResponse = await _blogService.UpdateBlog(Id, updateData, HttpContext.User?.Identity?.Name ?? "");
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
     [HttpDelete("{Id}")]
     public async Task<ActionResult<ServiceResponse<BlogResponse>>> DeleteBlog(int Id)
     {
-        var serviceResponse = await _blogService.DeleteBlog(Id);
+        var serviceResponse = await _blogService.DeleteBlog(Id, HttpContext.User?.Identity?.Name ?? "");
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
@@ -85,8 +84,7 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
             asset.Record.Name = string.Join("_", splitName.Skip(1));
             var isHeaderImage = uuid == "headerImage";
 
-            var blockImage = blogRequest.Content?.
-                Select(block => JsonSerializer.Deserialize<ContentBlock>(block)).
+            var blockImage = BlogHelper.ParseBlogContent(blogRequest.Content ?? []).
                 FirstOrDefault(block => block?.Metadata?["uuid"] == uuid);
 
             if (!isHeaderImage && blockImage == null)

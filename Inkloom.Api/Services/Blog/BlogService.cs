@@ -26,66 +26,43 @@ public class BlogService(DataContext context, IMapper mapper, IConfiguration con
 
         return new() { Data = _mapper.Map<BlogResponse>(blog) };
     }
-    public async Task<ServiceResponse<BlogResponse>> DeleteBlog(int blogId)
+    public async Task<ServiceResponse<BlogResponse>> GetBlogById(int blogId, string currentUsername)
     {
-        var blog = await _context.Blogs.FirstOrDefaultAsync(blog => blog.Id == blogId);
-        if (blog?.Id != blogId)
-        {
-            return new(HttpStatusCode.NotFound) { Message = "Not Found" };
-        }
-        _context.Remove(blog);
-        await _context.SoftSaveChangesAsync();
+        var blog = await _context.Blogs
+            .Where(blog => blog.Id == blogId)
+            .Include(blog => blog.Tags)
+            .Include(blog => blog.Author)
+            .FirstOrDefaultAsync();
 
-        return new() { Data = _mapper.Map<BlogResponse>(blog) };
-    }
-
-    public async Task<ServiceResponse<BlogResponse>> GetBlogById(int blogId)
-    {
-        var blog = await _context.Blogs.Where(blog => blog.Id == blogId).Include(blog => blog.Tags).FirstOrDefaultAsync();
         if (blog?.Id != blogId)
         {
             return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
         }
+
+        var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.Username == currentUsername);
+
+        if (!blog.Public && blog.Author != null && blog.AuthorId != currentUser?.Id && !blog.Author.Followers.Any(follower => follower.FollowerId == currentUser?.Id))
+        {
+            return new(HttpStatusCode.Forbidden) { Message = $"You need to follow {blog.Author.DisplayName} to read this blog" };
+        }
         return new() { Data = _mapper.Map<BlogResponse>(blog) };
     }
-
-    public async Task<ServiceResponse<BlogPreviewResponse>> GetBlogPreview(int blogId)
+    public async Task<ServiceResponse<BlogResponse>> UpdateBlog(int Id, BlogRequest updateData, string currentUsername)
     {
-        var blog = await _context.Blogs.Where(blog => blog.Id == blogId).Include(blog => blog.Tags).FirstOrDefaultAsync();
-        if (blog?.Id != blogId)
-        {
-            return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
-        }
-        return new() { Data = _mapper.Map<BlogPreviewResponse>(blog) };
-    }
+        var blog = await _context.Blogs
+            .Where(blog => blog.Id == Id)
+            .Include(blog => blog.Tags)
+            .Include(blog => blog.Author)
+            .FirstOrDefaultAsync();
 
-    public async Task<ServiceResponse<BlogResponse[]>> SearchBlogs(SearchBlogRequest searchData)
-    {
-        var blogs = await _context.Blogs
-        .Where(blog => searchData.Author == null || blog.Author != null && blog.Author.Username == searchData.Author)
-        .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
-        .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
-        .Where(blog => searchData.SearchText == null ||
-            blog.Title.Contains(searchData.SearchText) ||
-            blog.Subtitle == null ||
-            blog.Subtitle.Contains(searchData.SearchText))
-        .Include(blog => blog.Tags)
-        .Where(blog => searchData.Tags == null ||
-            searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToLower())))
-        .Skip((searchData.Page - 1) * 100)
-        .Take(100)
-        .Select(blog => _mapper.Map<BlogResponse>(blog))
-        .ToArrayAsync();
-
-        return new() { Data = blogs };
-    }
-
-    public async Task<ServiceResponse<BlogResponse>> UpdateBlog(int Id, BlogRequest updateData)
-    {
-        var blog = await _context.Blogs.Where(blog => blog.Id == Id).Include(blog => blog.Tags).FirstOrDefaultAsync();
         if (blog?.Id != Id)
         {
             return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
+        }
+
+        if (blog.Author!.Username != currentUsername)
+        {
+            return new(HttpStatusCode.Forbidden) { Message = "Access Denied to Private Blog" };
         }
         var updateBlog = _mapper.Map<Blog>(updateData);
 
@@ -96,27 +73,81 @@ public class BlogService(DataContext context, IMapper mapper, IConfiguration con
             _assetManager.DeleteOldFile(_configuration["ApiBaseUrl"]!, block.Content ?? "");
         }
 
-        if (blog.Status != BlogStatus.PUBLISHED && updateBlog.Status == BlogStatus.PUBLISHED)
+        if (updateBlog.Status == BlogStatus.PUBLISHED && (blog.Status != BlogStatus.PUBLISHED || blog.PublishedDate <= DateTime.MinValue))
         {
-            blog.PubllishedDate = DateTime.Now;
+            blog.PublishedDate = DateTime.UtcNow;
         }
 
         blog.Public = updateData.Public ?? false;
-        blog.Status = updateData.Status ?? BlogStatus.DRAFT;
+        blog.Status = updateData.Status;
         blog.Title = updateBlog.Title;
         blog.Subtitle = updateBlog.Subtitle;
         blog.HeaderImage = updateBlog.HeaderImage;
         blog.Content = updateBlog.Content;
 
-        if (updateData.Tags != null)
-        {
-            await HandleBlogTags(blog, updateBlog.Tags);
-        }
+        await HandleBlogTags(blog, updateBlog.Tags);
+
         await _context.SoftSaveChangesAsync();
 
         return new() { Data = _mapper.Map<BlogResponse>(blog) };
     }
+    public async Task<ServiceResponse<BlogResponse>> DeleteBlog(int blogId, string currentUsername)
+    {
+        var blog = await _context.Blogs
+            .Where(blog => blog.Id == blogId)
+            .Include(blog => blog.Author)
+            .FirstOrDefaultAsync();
 
+        if (blog?.Id != blogId)
+        {
+            return new(HttpStatusCode.NotFound) { Message = "Not Found" };
+        }
+
+        if (blog.Author!.Username != currentUsername)
+        {
+            return new(HttpStatusCode.Forbidden) { Message = "Access Denied to Private Blog" };
+        }
+
+        _context.Remove(blog);
+        await _context.SoftSaveChangesAsync();
+
+        return new() { Data = _mapper.Map<BlogResponse>(blog) };
+    }
+    public async Task<ServiceResponse<BlogPreviewResponse>> GetBlogPreview(int blogId)
+    {
+        var blog = await _context.Blogs
+            .Where(blog => blog.Id == blogId)
+            .Include(blog => blog.Tags)
+            .Include(blog => blog.Author)
+            .FirstOrDefaultAsync();
+
+        if (blog?.Id != blogId)
+        {
+            return new(HttpStatusCode.NotFound) { Message = "Blog not found" };
+        }
+        return new() { Data = _mapper.Map<BlogPreviewResponse>(blog) };
+    }
+    public async Task<ServiceResponse<BlogResponse[]>> SearchBlogs(SearchBlogRequest searchData)
+    {
+        var blogs = await _context.Blogs
+            .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
+            .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
+            .Where(blog => searchData.SearchText == null ||
+                blog.Title.Contains(searchData.SearchText) ||
+                blog.Subtitle == null ||
+                blog.Subtitle.Contains(searchData.SearchText))
+            .Include(blog => blog.Author)
+            .Where(blog => searchData.Author == null || blog.Author != null && blog.Author.Username == searchData.Author)
+            .Include(blog => blog.Tags)
+            .Where(blog => searchData.Tags == null ||
+                searchData.Tags.All(searchName => blog.Tags.Any(tag => tag.Name == searchName.ToLower())))
+            .Skip((searchData.Page - 1) * 100)
+            .Take(100)
+            .Select(blog => _mapper.Map<BlogResponse>(blog))
+            .ToArrayAsync();
+
+        return new() { Data = blogs };
+    }
     private async Task HandleBlogTags(Blog blog, IEnumerable<Tag> updatedTags)
     {
         var oldTagNames = blog.Tags.Select(tag => tag.Name.ToLower());
