@@ -127,11 +127,17 @@ public class BlogService(DataContext context, IMapper mapper, IConfiguration con
         }
         return new() { Data = _mapper.Map<BlogPreviewResponse>(blog) };
     }
-    public async Task<ServiceResponse<BlogResponse[]>> SearchBlogs(SearchBlogRequest searchData)
+    public async Task<ServiceResponse<BlogResponse[]>> SearchBlogs(SearchBlogRequest searchData, string currentUsername = "")
     {
+        var currentUser = string.IsNullOrEmpty(currentUsername) ? null :
+            await _context.Users
+                .Include(user => user.Followings)
+                .FirstOrDefaultAsync(user => user.Username == currentUsername);
+
         var blogs = await _context.Blogs
             .Where(blog => searchData.Status == null || blog.Status == searchData.Status)
             .Where(blog => searchData.Public == null || blog.Public == searchData.Public)
+            .Where(blog => currentUser == null || currentUser.Followings.Any(following => following.FollowingId == blog.AuthorId))
             .Where(blog => searchData.SearchText == null ||
                 blog.Title.Contains(searchData.SearchText) ||
                 blog.Subtitle == null ||

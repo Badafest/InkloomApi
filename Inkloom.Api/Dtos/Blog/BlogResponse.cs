@@ -12,14 +12,12 @@ public class BlogPreviewResponse
 {
     public int Id { get; set; }
     public AuthorResponse? Author { get; set; }
-
     public string Title { get; set; } = "";
-
     public string? Subtitle { get; set; }
-
     public string? HeaderImage { get; set; }
     public IEnumerable<string> Tags { get; set; } = [];
     public DateTimeOffset PubllishedDate { get; set; }
+    public int ReadingTime { get; set; }
 }
 
 public class BlogResponse : BlogPreviewResponse

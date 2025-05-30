@@ -18,6 +18,7 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+		<PackageReference Include="SoftCircuits.HtmlMonkey" Version="3.0.0" />
 	</ItemGroup>
 
 </Project>

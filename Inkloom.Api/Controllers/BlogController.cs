@@ -1,5 +1,6 @@
 using Inkloom.Api.Assets;
 using Microsoft.AspNetCore.Authorization;
+using System.Net;
 using System.Text.Json;
 
 namespace Inkloom.Api.Controllers;
@@ -15,17 +16,37 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
     private readonly IConfiguration _configuration = configuration;
 
     [HttpGet("Public")]
+    [AllowAnonymous]
     public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetPublicBlogs([FromQuery] SearchPublicBlogRequest publicSearchData)
     {
         var searchData = new SearchBlogRequest(publicSearchData);
         var serviceResponse = await _blogService.SearchBlogs(searchData);
+
+        // remove content for public blogs
+        foreach (var blog in serviceResponse.Data ?? [])
+        {
+            blog.Content = [];
+        }
+
+        return StatusCode((int)serviceResponse.Status, serviceResponse);
+    }
+
+    [HttpGet("Following")]
+    public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetFollowingBlogs([FromQuery] SearchPublicBlogRequest publicSearchData)
+    {
+        var searchData = new SearchBlogRequest(publicSearchData);
+        // remove public filter
+        searchData.Public = null;
+
+        var serviceResponse = await _blogService.SearchBlogs(searchData, User!.Identity!.Name!);
+
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
     [HttpGet]
     public async Task<ActionResult<ServiceResponse<BlogResponse[]>>> GetMyBlogs([FromQuery] SearchOwnBlogRequest ownSearchData)
     {
-        var searchData = new SearchBlogRequest(ownSearchData) { Author = User?.Identity?.Name ?? "" };
+        var searchData = new SearchBlogRequest(ownSearchData) { Author = User!.Identity!.Name! };
         var serviceResponse = await _blogService.SearchBlogs(searchData);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
@@ -33,7 +54,7 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
     [HttpGet("{Id}")]
     public async Task<ActionResult<ServiceResponse<BlogResponse>>> GetBlogById(int Id)
     {
-        var serviceResponse = await _blogService.GetBlogById(Id, HttpContext.User?.Identity?.Name ?? "");
+        var serviceResponse = await _blogService.GetBlogById(Id, HttpContext.User!.Identity!.Name!);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
@@ -52,7 +73,7 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
         {
             HandleBlogImages(newBlog);
         }
-        var serviceResponse = await _blogService.CreateBlog(newBlog, User?.Identity?.Name ?? "");
+        var serviceResponse = await _blogService.CreateBlog(newBlog, User!.Identity!.Name!);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
@@ -63,14 +84,14 @@ public class BlogController(IBlogService blogService, IAssetManager assetManager
         {
             HandleBlogImages(updateData);
         }
-        var serviceResponse = await _blogService.UpdateBlog(Id, updateData, HttpContext.User?.Identity?.Name ?? "");
+        var serviceResponse = await _blogService.UpdateBlog(Id, updateData, HttpContext.User!.Identity!.Name!);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
     [HttpDelete("{Id}")]
     public async Task<ActionResult<ServiceResponse<BlogResponse>>> DeleteBlog(int Id)
     {
-        var serviceResponse = await _blogService.DeleteBlog(Id, HttpContext.User?.Identity?.Name ?? "");
+        var serviceResponse = await _blogService.DeleteBlog(Id, HttpContext.User!.Identity!.Name!);
         return StatusCode((int)serviceResponse.Status, serviceResponse);
     }
 
